@@ -4,830 +4,496 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Pusat Sumber Sekolah (PSS Digital)</title>
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- HTML5-QRCode Library -->
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- HTML5 QR Code Scanner -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- QRCode.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Firebase App & Database (Compatibility Mode) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .animate-pulse-slow {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+        @media print {
+            body * { visibility: hidden; }
+            #printable-cards, #printable-cards * { visibility: visible; }
+            #printable-cards { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
         }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans antialiased">
 
-    <!-- Top Navigation Bar -->
-    <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
-            <div class="flex items-center space-x-3">
-                <div class="bg-teal-500 p-2.5 rounded-xl shadow-md text-white">
-                    <i class="fa-solid fa-book-bookmark text-xl"></i>
+    <!-- Header Navigation -->
+    <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-indigo-700 rounded-lg">
+                    <i data-lucide="book-open" class="w-6 h-6 text-amber-400"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg leading-tight tracking-wide">PSS DIGITAL ZON PELANGAI</h1>
+                    <h1 class="text-xl font-bold tracking-wide">PSS DIGITAL ZON PELANGAI</h1>
                     <p class="text-xs text-indigo-200">Sistem Imbasan & Sirkulasi Masa-Nyata (Real-Time)</p>
                 </div>
             </div>
 
-            <!-- Device Selector Toggle -->
-            <div class="bg-indigo-950 p-1 rounded-xl flex items-center border border-indigo-700/50">
-                <button id="btn-mode-pc" onclick="switchMode('pc')" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 bg-teal-500 text-white shadow">
-                    <i class="fa-solid fa-desktop"></i>
+            <!-- Mode Switcher Buttons -->
+            <div class="flex items-center bg-indigo-950/60 p-1 rounded-xl border border-indigo-700/50">
+                <button id="btn-mode-pc" onclick="switchMode('pc')" class="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-900 shadow-md">
+                    <i data-lucide="laptop" class="w-4 h-4"></i>
                     <span>Skrin Laptop / PC</span>
                 </button>
-                <button id="btn-mode-mobile" onclick="switchMode('mobile')" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 text-indigo-300 hover:text-white">
-                    <i class="fa-solid fa-mobile-screen-button"></i>
+                <button id="btn-mode-mobile" onclick="switchMode('mobile')" class="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold text-indigo-200 hover:text-white transition-all">
+                    <i data-lucide="qr-code" class="w-4 h-4"></i>
                     <span>Imbas QR (Telefon)</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6 no-print">
 
-        <!-- MODE 1: PC / LAPTOP DASHBOARD VIEW -->
+        <!-- ==================== MODE 1: LAPTOP / PC COUNTER ==================== -->
         <div id="view-pc" class="space-y-6">
-            
-            <!-- Connection & Status Bar -->
-            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4">
-                <div class="flex items-center space-x-3">
-                    <span class="relative flex h-3 w-3">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                    </span>
-                    <div>
-                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block">Status Pengimbas Sync</span>
-                        <span id="sync-status-text" class="text-sm font-semibold text-slate-700">Menunggu imbasan dari telefon bimbit...</span>
-                    </div>
-                </div>
 
-                <!-- Simulation Helper (Testing Without Phone) -->
-                <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
-                    <span class="text-xs text-slate-500 font-medium pl-2"><i class="fa-solid fa-vial text-indigo-500 mr-1"></i> Uji Simulasi PC:</span>
-                    <select id="sim-student-select" onchange="simulateScan(this.value)" class="text-xs bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                        <option value="">-- Pilih Murid Contoh --</option>
-                        <option value="M101">Ahmad Zaki (5 Cemerlang)</option>
-                        <option value="M102">Siti Nurhaliza (4 Bestari)</option>
-                        <option value="M103">Chong Wei (3 Inovatif)</option>
-                        <option value="M104">Kavitha Nair (6 Dinamik)</option>
-                    </select>
-                </div>
+            <!-- Sub Navigation Tabs -->
+            <div class="flex border-b border-slate-200 gap-2">
+                <button onclick="switchTab('kaunter')" id="tab-kaunter" class="flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 border-indigo-600 text-indigo-600">
+                    <i data-lucide="scan" class="w-4 h-4"></i> Kaunter Sirkulasi
+                </button>
+                <button onclick="switchTab('qr-murid')" id="tab-qr-murid" class="flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700">
+                    <i data-lucide="qr-code" class="w-4 h-4"></i> Kad QR Murid
+                </button>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <!-- Left Column: Active Student Scan Result Card / Form -->
-                <div class="lg:col-span-2 space-y-6">
-                    
-                    <!-- Waiting Scan Placeholder (When no student actively scanned) -->
-                    <div id="card-empty-state" class="bg-white rounded-2xl p-12 shadow-sm border border-slate-200 text-center flex flex-col items-center justify-center min-h-[420px]">
-                        <div class="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 mb-4 animate-bounce">
-                            <i class="fa-solid fa-qrcode text-3xl"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-700">Sedia Untuk Imbasan Murid</h3>
-                        <p class="text-slate-500 text-sm max-w-md mt-1">Sila imbas Kad QR Murid menggunakan **Telefon Bimbit** atau pilih pilihan simulasi di atas. Borang sirkulasi akan terpapar secara automatik di sini.</p>
-                        <div class="mt-6 flex items-center space-x-2 text-xs text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full font-medium">
-                            <i class="fa-solid fa-wifi"></i>
-                            <span>Real-Time Sync Aktif via Firebase</span>
+            <!-- TAB 1: KAUNTER SIRKULASI -->
+            <div id="content-kaunter" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Status & Scanner Trigger Box -->
+                <div class="lg:col-span-12 bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="relative flex h-3 w-3">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                        </span>
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status Pengimbas Sync</p>
+                            <p id="sync-status" class="text-sm font-bold text-slate-700">Menunggu imbasan dari telefon bimbit...</p>
                         </div>
                     </div>
 
-                    <!-- Active Student Transaction Panel (Hidden by default) -->
-                    <div id="card-active-student" class="hidden bg-white rounded-2xl shadow-md border border-indigo-100 overflow-hidden">
-                        <!-- Student Header Banner -->
-                        <div class="bg-gradient-to-r from-indigo-900 to-indigo-700 p-6 text-white flex flex-wrap justify-between items-center gap-4">
-                            <div class="flex items-center space-x-4">
-                                <img id="student-avatar" src="https://placehold.co/100x100/312e81/ffffff?text=Murid" alt="Avatar" class="w-16 h-16 rounded-full border-2 border-white shadow-sm object-cover">
-                                <div>
-                                    <div class="flex items-center space-x-2">
-                                        <h2 id="student-name" class="text-xl font-bold">Nama Murid</h2>
-                                        <span id="student-id-badge" class="bg-teal-500 text-white text-xs px-2 py-0.5 rounded-md font-mono">ID: M101</span>
-                                    </div>
-                                    <p id="student-class" class="text-indigo-200 text-sm mt-0.5">Kelas 5 Cemerlang</p>
-                                </div>
+                    <!-- Quick Simulator dropdown -->
+                    <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                        <span class="text-xs text-slate-500 font-medium">Uji Simulasi PC:</span>
+                        <select id="sim-select" class="text-xs p-1.5 border border-slate-300 rounded bg-white font-medium">
+                            <option value="M001">Ahmad Albab (5 Bestari)</option>
+                            <option value="M002">Siti Nurhaliza (4 Bestari)</option>
+                            <option value="M003">Upin Ipin (3 Cerdik)</option>
+                        </select>
+                        <button onclick="simulateScan()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded font-semibold transition">
+                            Imbas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Left Column: Student Details & Actions -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div id="student-card-empty" class="bg-white p-12 rounded-2xl shadow-sm border border-slate-200 text-center flex flex-col items-center justify-center min-h-[380px]">
+                        <div class="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-4">
+                            <i data-lucide="qr-code" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-700">Sedia Untuk Imbasan Murid</h3>
+                        <p class="text-sm text-slate-500 max-w-md mt-1">Sila imbas Kad QR Murid menggunakan **Telefon Bimbit** atau pilih simulasi di atas. Borang sirkulasi akan terpapar secara automatik di sini.</p>
+                    </div>
+
+                    <div id="student-card-active" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-indigo-600 p-4 text-white flex justify-between items-center">
+                            <div>
+                                <span class="bg-indigo-800 text-indigo-100 text-xs px-2.5 py-0.5 rounded-full font-semibold" id="disp-id">ID: M001</span>
+                                <h2 class="text-xl font-bold mt-1" id="disp-name">Ahmad Albab</h2>
+                                <p class="text-xs text-indigo-200" id="disp-class">Kelas: 5 Bestari</p>
                             </div>
-                            <button onclick="clearActiveScan()" class="text-xs bg-indigo-800/80 hover:bg-indigo-800 text-indigo-200 hover:text-white px-3 py-1.5 rounded-lg border border-indigo-600 transition">
-                                <i class="fa-solid fa-xmark mr-1"></i> Tutup Borang
+                            <button onclick="resetKaunter()" class="text-indigo-200 hover:text-white text-xs bg-indigo-700 hover:bg-indigo-800 px-3 py-1.5 rounded-lg transition">
+                                Selesai / Buka Baru
                             </button>
                         </div>
 
-                        <!-- Stats Row -->
-                        <div class="grid grid-cols-3 border-b border-slate-100 bg-slate-50/50 text-center py-3 px-2 text-xs">
-                            <div class="border-r border-slate-200">
-                                <span class="text-slate-400 block font-medium">Buku Dipinjam</span>
-                                <span id="student-borrowed-count" class="text-base font-bold text-indigo-900">0</span>
-                            </div>
-                            <div class="border-r border-slate-200">
-                                <span class="text-slate-400 block font-medium">Jumlah Bacaan (NILAM)</span>
-                                <span id="student-nilam-count" class="text-base font-bold text-teal-600">0</span>
-                            </div>
-                            <div>
-                                <span class="text-slate-400 block font-medium">Status Kelayakan</span>
-                                <span id="student-eligibility" class="inline-block mt-0.5 font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">LAYAK</span>
-                            </div>
-                        </div>
-
-                        <!-- Tabs Navigation (Pinjam / Pulang) -->
+                        <!-- Action Forms -->
                         <div class="p-6">
+                            <!-- Tabs: Borrow vs Return -->
                             <div class="flex border-b border-slate-200 mb-6">
-                                <button id="tab-btn-pinjam" onclick="switchTab('pinjam')" class="pb-3 px-4 font-bold text-sm border-b-2 border-indigo-600 text-indigo-600 flex items-center space-x-2">
-                                    <i class="fa-solid fa-book-medical"></i>
-                                    <span>PINJAM BUKU</span>
+                                <button id="btn-tab-borrow" onclick="setFormTab('borrow')" class="flex-1 py-2 text-center font-bold text-sm border-b-2 border-indigo-600 text-indigo-600">
+                                    Pinjam Buku
                                 </button>
-                                <button id="tab-btn-pulang" onclick="switchTab('pulang')" class="pb-3 px-4 font-semibold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 flex items-center space-x-2">
-                                    <i class="fa-solid fa-book-bookmark"></i>
-                                    <span>PULANG BUKU</span>
-                                    <span id="badge-borrowed-num" class="ml-1 bg-amber-100 text-amber-800 text-xs px-2 py-0.2 rounded-full">0</span>
+                                <button id="btn-tab-return" onclick="setFormTab('return')" class="flex-1 py-2 text-center font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700">
+                                    Pulangkan Buku
                                 </button>
                             </div>
 
-                            <!-- TAB 1: FORM PINJAM BUKU -->
-                            <div id="tab-content-pinjam" class="space-y-4">
-                                <form id="form-pinjam" onsubmit="handleBorrowSubmit(event)">
-                                    <div class="space-y-4">
-                                        <div>
-                                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Judul Buku / Nama Kitab *</label>
-                                            <div class="relative">
-                                                <i class="fa-solid fa-book text-slate-400 absolute left-3 top-3 text-sm"></i>
-                                                <input type="text" id="input-book-title" required placeholder="Suntikkan / Taip Judul Buku (cth: Hikayat Hang Tuah)" class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                            </div>
-                                        </div>
+                            <!-- Form Borrow -->
+                            <form id="form-borrow" onsubmit="handleBorrow(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Judul Buku / Tajuk</label>
+                                    <input type="text" id="input-book-title" required placeholder="Cth: Sang Kancil & Buaya / Bahasa Melayu T5" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">No. Perolehan / Kod Buku (Opsional)</label>
+                                    <input type="text" id="input-book-code" placeholder="Cth: B-2024-089" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                </div>
+                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Simpan Rekod Pinjaman
+                                </button>
+                            </form>
 
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Kod ISBN / Nombor Perolehan (Opsional)</label>
-                                                <input type="text" id="input-book-isbn" placeholder="Cth: B-2026-8812" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono">
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Kategori Buku</label>
-                                                <select id="input-book-category" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                                    <option value="Fiksyen Bahasa Melayu">Fiksyen Bahasa Melayu</option>
-                                                    <option value="Fiksyen Bahasa Inggeris">Fiksyen Bahasa Inggeris</option>
-                                                    <option value="Bukan Fiksyen / Sains">Bukan Fiksyen / Sains</option>
-                                                    <option value="Sejarah & Kebudayaan">Sejarah & Kebudayaan</option>
-                                                    <option value="Agama & Moral">Agama & Moral</option>
-                                                    <option value="Buku Rujukan">Buku Rujukan</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
-                                            <div>
-                                                <span class="text-slate-500 block font-medium">Tarikh Pinjam:</span>
-                                                <span id="display-borrow-date" class="font-bold text-slate-700">Hari Ini</span>
-                                            </div>
-                                            <div>
-                                                <span class="text-slate-500 block font-medium">Jangka Pulang (7 Hari):</span>
-                                                <span id="display-return-due" class="font-bold text-indigo-600">+7 Hari</span>
-                                            </div>
-                                        </div>
-
-                                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition duration-200 flex items-center justify-center space-x-2 text-sm">
-                                            <i class="fa-solid fa-check-circle"></i>
-                                            <span>SAHKAN PINJAMAN BUKU</span>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- TAB 2: FORM PULANG BUKU -->
-                            <div id="tab-content-pulang" class="hidden space-y-4">
-                                <div id="container-borrowed-list" class="space-y-3">
-                                    <!-- Dynamic list of borrowed books will be injected here -->
+                            <!-- Form Return -->
+                            <div id="form-return" class="hidden space-y-4">
+                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Senarai Buku Sedang Dipinjam</h4>
+                                <div id="borrowed-list" class="space-y-2">
+                                    <!-- Borrowed items will be listed here -->
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column: Recent Activity Logs & Quick Stats -->
-                <div class="space-y-6">
-                    
-                    <!-- Today's PSS Circulation Quick Stats -->
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                        <h3 class="font-bold text-slate-700 text-sm flex items-center space-x-2">
-                            <i class="fa-solid fa-chart-pie text-indigo-600"></i>
-                            <span>Statistik Kaunter Hari Ini</span>
+                <!-- Right Column: Stats & Recent Log -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-xs text-slate-500 font-medium">Total Pinjaman</p>
+                            <p id="stat-total-borrow" class="text-2xl font-black text-indigo-600 mt-1">0</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-xs text-slate-500 font-medium">Total Pemulangan</p>
+                            <p id="stat-total-return" class="text-2xl font-black text-emerald-600 mt-1">0</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="font-bold text-slate-700 text-sm mb-4 flex items-center gap-2">
+                            <i data-lucide="history" class="w-4 h-4 text-slate-400"></i> Log Transaksi Terkini
                         </h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
-                                <span class="text-xs text-indigo-600 font-medium block">Total Pinjaman</span>
-                                <span id="stat-today-borrows" class="text-2xl font-black text-indigo-900">0</span>
-                            </div>
-                            <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
-                                <span class="text-xs text-emerald-600 font-medium block">Total Pemulangan</span>
-                                <span id="stat-today-returns" class="text-2xl font-black text-emerald-900">0</span>
-                            </div>
+                        <div id="recent-logs" class="space-y-3 text-xs">
+                            <p class="text-slate-400 italic text-center py-4">Belum ada sebarang transaksi hari ini.</p>
                         </div>
                     </div>
-
-                    <!-- Live Activity Log -->
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                        <div class="flex justify-between items-center">
-                            <h3 class="font-bold text-slate-700 text-sm flex items-center space-x-2">
-                                <i class="fa-solid fa-clock-rotate-left text-teal-600"></i>
-                               <span>Log Transaksi Terkini</span>
-                            </h3>
-                            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-mono">Real-time</span>
-                        </div>
-
-                        <div id="activity-log-container" class="space-y-3 max-h-[350px] overflow-y-auto pr-1">
-                            <!-- Injected live log items -->
-                            <div class="text-center py-6 text-xs text-slate-400 italic">
-                                Belum ada sebarang transaksi hari ini.
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
+
+            <!-- TAB 2: KAD QR MURID -->
+            <div id="content-qr-murid" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Senarai & Cetakan Kad QR Murid</h2>
+                        <p class="text-xs text-slate-500">Gunakan Kad QR ini untuk diimbas menggunakan telefon bimbit pengawas/guru.</p>
+                    </div>
+                    <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2">
+                        <i data-lucide="printer" class="w-4 h-4"></i> Cetak Kad QR Murid
+                    </button>
+                </div>
+
+                <!-- Printable Area -->
+                <div id="printable-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Student Cards generated dynamically -->
+                </div>
+            </div>
+
         </div>
 
-        <!-- MODE 2: MOBILE QR SCANNER VIEW (Used on Mobile Phones) -->
-        <div id="view-mobile" class="hidden max-w-md mx-auto space-y-5">
-            <div class="bg-white rounded-2xl p-5 shadow-md border border-slate-200 text-center space-y-4">
-                <div class="inline-block bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                    <i class="fa-solid fa-mobile-screen mr-1"></i> Modul Pengawas PSS
+        <!-- ==================== MODE 2: MOBILE QR SCANNER ==================== -->
+        <div id="view-mobile" class="hidden max-w-md mx-auto space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 text-center space-y-4">
+                <div class="inline-flex p-3 bg-amber-100 text-amber-700 rounded-full">
+                    <i data-lucide="camera" class="w-8 h-8"></i>
                 </div>
-                <h2 class="text-lg font-bold text-slate-800">Pengimbas QR Kad Murid</h2>
-                <p class="text-xs text-slate-500">Halakan kamera telefon ke Kod QR pada kad murid. Skrin komputer di kaunter akan membuka borang secara automatik.</p>
+                <h2 class="text-xl font-bold text-slate-800">Pengimbas Kad QR Murid</h2>
+                <p class="text-xs text-slate-500">Halakan kamera telefon anda ke Kad QR ID Murid. Rekod akan dihantar ke PC Kaunter secara masa-nyata.</p>
 
-                <!-- Camera Container -->
-                <div class="relative bg-black rounded-xl overflow-hidden min-h-[260px] flex items-center justify-center border-2 border-indigo-500 shadow-inner">
-                    <div id="qr-reader" class="w-full"></div>
-                    <div id="camera-placeholder" class="text-white text-xs space-y-2 p-4">
-                        <i class="fa-solid fa-camera text-3xl text-indigo-400 animate-pulse"></i>
-                        <p class="text-slate-300">Sila klik 'Aktifkan Kamera' di bawah untuk mula mengimbas.</p>
-                    </div>
+                <div id="reader-container" class="overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50">
+                    <div id="reader" class="w-full"></div>
                 </div>
 
-                <div class="flex space-x-2">
-                    <button id="btn-start-camera" onclick="startMobileScanner()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-2 shadow">
-                        <i class="fa-solid fa-power-off"></i>
-                        <span>Aktifkan Kamera</span>
-                    </button>
-                    <button id="btn-stop-camera" onclick="stopMobileScanner()" class="hidden flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-2 shadow">
-                        <i class="fa-solid fa-stop"></i>
-                        <span>Tutup Kamera</span>
-                    </button>
+                <div id="mobile-scan-result" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-xs font-semibold">
+                    ✅ Berjaya dihantar ke skrin PC!
                 </div>
-            </div>
 
-            <!-- Manual QR Code Input Simulation for Mobile testing -->
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
-                <h3 class="font-bold text-xs uppercase tracking-wider text-slate-500">Imbasan Manual / Ujian Pantas</h3>
-                <p class="text-xs text-slate-400">Sentuh butang murid di bawah untuk mensimulasikan imbasan dari telefon:</p>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="mobileTriggerScan('M101')" class="text-left p-2.5 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-lg transition text-xs">
-                        <span class="font-bold text-slate-700 block">Ahmad Zaki</span>
-                        <span class="text-[10px] text-slate-400 font-mono">ID: M101</span>
-                    </button>
-                    <button onclick="mobileTriggerScan('M102')" class="text-left p-2.5 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-lg transition text-xs">
-                        <span class="font-bold text-slate-700 block">Siti Nurhaliza</span>
-                        <span class="text-[10px] text-slate-400 font-mono">ID: M102</span>
-                    </button>
-                    <button onclick="mobileTriggerScan('M103')" class="text-left p-2.5 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-lg transition text-xs">
-                        <span class="font-bold text-slate-700 block">Chong Wei</span>
-                        <span class="text-[10px] text-slate-400 font-mono">ID: M103</span>
-                    </button>
-                    <button onclick="mobileTriggerScan('M104')" class="text-left p-2.5 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-lg transition text-xs">
-                        <span class="font-bold text-slate-700 block">Kavitha Nair</span>
-                        <span class="text-[10px] text-slate-400 font-mono">ID: M104</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Toast / Feedback alert for mobile -->
-            <div id="mobile-toast" class="hidden bg-emerald-600 text-white p-3 rounded-xl shadow-lg text-xs font-bold flex items-center justify-between animate-bounce">
-                <span class="flex items-center"><i class="fa-solid fa-circle-check mr-2 text-base"></i> <span id="mobile-toast-msg">Berjaya diimbas! Borang terbuka di Laptop.</span></span>
+                <button id="btn-start-scanner" onclick="startScanner()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-md">
+                    <i data-lucide="power" class="w-4 h-4"></i> Buka Kamera Imbas
+                </button>
             </div>
         </div>
 
     </main>
 
-    <!-- Notification Toast Modal -->
-    <div id="notification-modal" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-        <div class="bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-slate-700">
-            <div id="notif-icon" class="text-emerald-400 text-lg">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <div>
-                <p id="notif-title" class="font-bold text-xs">Berjaya</p>
-                <p id="notif-message" class="text-xs text-slate-300">Transaksi telah direkodkan.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Firebase SDK Imports -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Firebase Configuration fallback & dynamic setup
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'pss-pelangai-demo';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : {
-                apiKey: "AIzaSyDemoConfigOnlyForTestingPurpose",
-                authDomain: "demo-app.firebaseapp.com",
-                projectId: "demo-app",
-                storageBucket: "demo-app.appspot.com",
-                messagingSenderId: "123456789",
-                appId: "1:123456789:web:abcdef123456"
-            };
-
-        // Initialize Firebase Services
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // State Global Variables
-        window.db = db;
-        window.appId = appId;
-        window.currentUser = null;
-        window.activeStudentData = null;
-        window.html5QrCode = null;
-
-        // Sample Pre-populated Students Database
-        const sampleStudents = {
-            "M101": {
-                id: "M101",
-                name: "Ahmad Zaki Bin Ramli",
-                class: "5 Cemerlang",
-                avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
-                borrowedCount: 1,
-                nilamCount: 14,
-                borrowedBooks: [
-                    { id: "BK-901", title: "Siri Novel Remaja: Meniti Impian", dateBorrowed: "2026-09-18", dueDate: "2026-09-25", category: "Fiksyen BM" }
-                ]
-            },
-            "M102": {
-                id: "M102",
-                name: "Siti Nurhaliza Binti Hassan",
-                class: "4 Bestari",
-                avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-                borrowedCount: 0,
-                nilamCount: 22,
-                borrowedBooks: []
-            },
-            "M103": {
-                id: "M103",
-                name: "Chong Wei Sheng",
-                class: "3 Inovatif",
-                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-                borrowedCount: 2,
-                nilamCount: 8,
-                borrowedBooks: [
-                    { id: "BK-302", title: "Encikklopedia Sains Komputer", dateBorrowed: "2026-09-12", dueDate: "2026-09-19", category: "Sains" },
-                    { id: "BK-303", title: "Sejarah Dunia Moden", dateBorrowed: "2026-09-20", dueDate: "2026-09-27", category: "Sejarah" }
-                ]
-            },
-            "M104": {
-                id: "M104",
-                name: "Kavitha A/P Subramaniam",
-                class: "6 Dinamik",
-                avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-                borrowedCount: 0,
-                nilamCount: 35,
-                borrowedBooks: []
-            }
+    <!-- App Logic & Firebase Sync -->
+    <script>
+        // Default Mock Students Data
+        const STUDENTS = {
+            'M001': { id: 'M001', name: 'Ahmad Albab', class: '5 Bestari' },
+            'M002': { id: 'M002', name: 'Siti Nurhaliza', class: '4 Bestari' },
+            'M003': { id: 'M003', name: 'Upin Ipin', class: '3 Cerdik' }
         };
 
-        // Authenticate User & Set up Listeners
-        async function initAuth() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.warn("Auth fallback activated:", err);
-            }
-        }
+        let currentStudentId = null;
+        let html5QrcodeScanner = null;
+        let transactions = [];
 
-        onAuthStateChanged(auth, (user) => {
-            window.currentUser = user;
-            if (user) {
-                console.log("Firebase Auth Connected:", user.uid);
-                setupRealtimeScanListener();
-                setupRealtimeLogsListener();
+        // Initialize Firebase (Demo Config)
+        const firebaseConfig = {
+            databaseURL: "https://pss-pelangai-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+        } catch(e) {}
+        
+        const db = firebase.database ? firebase.database() : null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderQRCards();
+
+            // Listen for Realtime Scans from Firebase
+            if(db) {
+                db.ref('active_scan').on('value', (snapshot) => {
+                    const studentId = snapshot.val();
+                    if(studentId && STUDENTS[studentId]) {
+                        openStudentForm(studentId);
+                        document.getElementById('sync-status').innerText = `Imbasan Terkini Received: ${STUDENTS[studentId].name}`;
+                    }
+                });
             }
         });
 
-        // 1. Listen to 'active_scan' document for real-time PC display updates
-        function setupRealtimeScanListener() {
-            if (!window.currentUser) return;
-            const scanDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'active_scan', 'current');
-            
-            onSnapshot(scanDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data && data.studentId) {
-                        displayStudentForm(data.studentId);
-                    } else {
-                        hideStudentForm();
-                    }
-                }
-            }, (error) => {
-                console.error("Error listening to active scan:", error);
+        // Switch Mode (PC vs Mobile)
+        function switchMode(mode) {
+            const btnPC = document.getElementById('btn-mode-pc');
+            const btnMobile = document.getElementById('btn-mode-mobile');
+            const viewPC = document.getElementById('view-pc');
+            const viewMobile = document.getElementById('view-mobile');
+
+            if(mode === 'pc') {
+                viewPC.classList.remove('hidden');
+                viewMobile.classList.add('hidden');
+                btnPC.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-900 shadow-md";
+                btnMobile.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold text-indigo-200 hover:text-white transition-all";
+                if(html5QrcodeScanner) html5QrcodeScanner.stop();
+            } else {
+                viewPC.classList.add('hidden');
+                viewMobile.classList.remove('hidden');
+                btnMobile.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-900 shadow-md";
+                btnPC.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold text-indigo-200 hover:text-white transition-all";
+            }
+        }
+
+        // Switch Tabs (Kaunter vs Kad QR Murid)
+        function switchTab(tab) {
+            const contentKaunter = document.getElementById('content-kaunter');
+            const contentQR = document.getElementById('content-qr-murid');
+            const tabKaunter = document.getElementById('tab-kaunter');
+            const tabQR = document.getElementById('tab-qr-murid');
+
+            if(tab === 'kaunter') {
+                contentKaunter.classList.remove('hidden');
+                contentQR.classList.add('hidden');
+                tabKaunter.className = "flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 border-indigo-600 text-indigo-600";
+                tabQR.className = "flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700";
+            } else {
+                contentKaunter.classList.add('hidden');
+                contentQR.classList.remove('hidden');
+                tabQR.className = "flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 border-indigo-600 text-indigo-600";
+                tabKaunter.className = "flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700";
+            }
+        }
+
+        // Render Student QR Cards in Directory
+        function renderQRCards() {
+            const container = document.getElementById('printable-cards');
+            container.innerHTML = '';
+
+            Object.values(STUDENTS).forEach(s => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl border-2 border-slate-200 shadow-sm flex flex-col items-center text-center relative overflow-hidden";
+                card.innerHTML = `
+                    <div class="w-full bg-indigo-900 text-white py-1.5 px-3 rounded-lg text-xs font-bold mb-3 flex justify-between items-center">
+                        <span>PUSS ZON PELANGAI</span>
+                        <span>${s.id}</span>
+                    </div>
+                    <div id="qrcode-${s.id}" class="my-2 p-2 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                    <h3 class="font-bold text-slate-800 text-base mt-2">${s.name}</h3>
+                    <p class="text-xs text-slate-500">Kelas: ${s.class}</p>
+                `;
+                container.appendChild(card);
+
+                // Generate QR Code Graphic
+                setTimeout(() => {
+                    new QRCode(document.getElementById(`qrcode-${s.id}`), {
+                        text: s.id,
+                        width: 120,
+                        height: 120
+                    });
+                }, 100);
             });
         }
 
-        // 2. Listen to Realtime Activity Logs
-        function setupRealtimeLogsListener() {
-            if (!window.currentUser) return;
-            const logsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'logs');
-            
-            onSnapshot(logsCollectionRef, (snapshot) => {
-                const logs = [];
-                snapshot.forEach((doc) => {
-                    logs.push({ id: doc.id, ...doc.data() });
-                });
-                // Sort by timestamp in memory (Rule 2 adherence)
-                logs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                renderActivityLogs(logs);
-                updateStats(logs);
-            }, (error) => {
-                console.error("Error listening to logs:", error);
-            });
+        // Open Form for scanned student
+        function openStudentForm(studentId) {
+            currentStudentId = studentId;
+            const student = STUDENTS[studentId];
+            if(!student) return;
+
+            document.getElementById('student-card-empty').classList.add('hidden');
+            document.getElementById('student-card-active').classList.remove('hidden');
+
+            document.getElementById('disp-id').innerText = `ID: ${student.id}`;
+            document.getElementById('disp-name').innerText = student.name;
+            document.getElementById('disp-class').innerText = `Kelas: ${student.class}`;
+
+            renderBorrowedList();
         }
 
-        // Send Active Scan to Firebase (Triggered from phone or simulator)
-        window.sendActiveScanToFirebase = async function(studentId) {
-            if (!window.currentUser) return;
-            try {
-                const scanDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'active_scan', 'current');
-                await setDoc(scanDocRef, {
-                    studentId: studentId,
-                    timestamp: Date.now(),
-                    device: 'Mobile Scanner'
-                });
-            } catch (err) {
-                console.error("Failed to update active scan:", err);
-                // Fallback local update if offline
-                displayStudentForm(studentId);
-            }
-        };
+        function simulateScan() {
+            const selectedId = document.getElementById('sim-select').value;
+            openStudentForm(selectedId);
+            if(db) db.ref('active_scan').set(selectedId);
+        }
 
-        // Clear active scan state from Firebase
-        window.clearActiveScan = async function() {
-            if (!window.currentUser) {
-                hideStudentForm();
-                return;
-            }
-            try {
-                const scanDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'active_scan', 'current');
-                await setDoc(scanDocRef, { studentId: null, timestamp: Date.now() });
-            } catch (err) {
-                console.error(err);
-            }
-            hideStudentForm();
-        };
+        function resetKaunter() {
+            currentStudentId = null;
+            document.getElementById('student-card-active').classList.add('hidden');
+            document.getElementById('student-card-empty').classList.remove('hidden');
+            document.getElementById('sync-status').innerText = "Menunggu imbasan dari telefon bimbit...";
+        }
 
-        // Display Active Student Form on PC
-        function displayStudentForm(studentId) {
-            const student = sampleStudents[studentId] || {
-                id: studentId,
-                name: "Murid Tidak Dikenali",
-                class: "Kelas Unassigned",
-                avatar: "https://placehold.co/100x100/475569/ffffff?text=Murid",
-                borrowedCount: 0,
-                nilamCount: 0,
-                borrowedBooks: []
+        function setFormTab(tab) {
+            const formBorrow = document.getElementById('form-borrow');
+            const formReturn = document.getElementById('form-return');
+            const btnBorrow = document.getElementById('btn-tab-borrow');
+            const btnReturn = document.getElementById('btn-tab-return');
+
+            if(tab === 'borrow') {
+                formBorrow.classList.remove('hidden');
+                formReturn.classList.add('hidden');
+                btnBorrow.className = "flex-1 py-2 text-center font-bold text-sm border-b-2 border-indigo-600 text-indigo-600";
+                btnReturn.className = "flex-1 py-2 text-center font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700";
+            } else {
+                formBorrow.classList.add('hidden');
+                formReturn.classList.remove('hidden');
+                btnReturn.className = "flex-1 py-2 text-center font-bold text-sm border-b-2 border-indigo-600 text-indigo-600";
+                btnBorrow.className = "flex-1 py-2 text-center font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700";
+            }
+        }
+
+        function handleBorrow(e) {
+            e.preventDefault();
+            const title = document.getElementById('input-book-title').value;
+            const code = document.getElementById('input-book-code').value || '-';
+
+            const tx = {
+                id: Date.now(),
+                studentId: currentStudentId,
+                studentName: STUDENTS[currentStudentId].name,
+                bookTitle: title,
+                bookCode: code,
+                type: 'PINJAM',
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: 'DIPINJAM'
             };
 
-            window.activeStudentData = student;
+            transactions.unshift(tx);
+            document.getElementById('input-book-title').value = '';
+            document.getElementById('input-book-code').value = '';
 
-            // Update UI elements
-            document.getElementById('card-empty-state').classList.add('hidden');
-            document.getElementById('card-active-student').classList.remove('hidden');
-
-            document.getElementById('student-name').innerText = student.name;
-            document.getElementById('student-id-badge').innerText = `ID: ${student.id}`;
-            document.getElementById('student-class').innerText = `Kelas ${student.class}`;
-            document.getElementById('student-avatar').src = student.avatar;
-            document.getElementById('student-borrowed-count').innerText = student.borrowedBooks.length;
-            document.getElementById('student-nilam-count').innerText = student.nilamCount;
-            document.getElementById('badge-borrowed-num').innerText = student.borrowedBooks.length;
-
-            // Dates setup
-            const today = new Date();
-            const dueDate = new Date();
-            dueDate.setDate(today.getDate() + 7);
-
-            document.getElementById('display-borrow-date').innerText = today.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
-            document.getElementById('display-return-due').innerText = dueDate.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
-
-            // Render borrowed books tab content
-            renderBorrowedBooksList(student.borrowedBooks);
-
-            // Default back to Pinjam tab
-            switchTab('pinjam');
-
-            document.getElementById('sync-status-text').innerText = `Aktif: ${student.name} (${student.id})`;
+            updateStats();
+            renderLogs();
+            renderBorrowedList();
+            alert(`Buku "${title}" berjaya direkodkan di bawah nama ${STUDENTS[currentStudentId].name}!`);
         }
 
-        function hideStudentForm() {
-            document.getElementById('card-empty-state').classList.remove('hidden');
-            document.getElementById('card-active-student').classList.add('hidden');
-            document.getElementById('sim-student-select').value = "";
-            document.getElementById('sync-status-text').innerText = "Menunggu imbasan dari telefon bimbit...";
-            window.activeStudentData = null;
+        function returnBook(txId) {
+            const tx = transactions.find(t => t.id === txId);
+            if(tx) {
+                tx.status = 'DIPULANGKAN';
+                transactions.unshift({
+                    id: Date.now(),
+                    studentId: tx.studentId,
+                    studentName: tx.studentName,
+                    bookTitle: tx.bookTitle,
+                    type: 'PULANG',
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+                updateStats();
+                renderLogs();
+                renderBorrowedList();
+                alert(`Buku "${tx.bookTitle}" telah dipulangkan.`);
+            }
         }
 
-        // Render Borrowed Books list with return buttons
-        function renderBorrowedBooksList(books) {
-            const container = document.getElementById('container-borrowed-list');
-            if (!books || books.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                        <i class="fa-solid fa-book-open text-slate-300 text-3xl mb-2"></i>
-                        <p class="text-xs text-slate-500 font-medium">Tiada sebarang buku sedang dipinjam oleh murid ini.</p>
-                    </div>
-                `;
+        function renderBorrowedList() {
+            const list = document.getElementById('borrowed-list');
+            const activeBorrows = transactions.filter(t => t.studentId === currentStudentId && t.type === 'PINJAM' && t.status === 'DIPINJAM');
+
+            if(activeBorrows.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 italic">Murid ini tiada rekod buku yang sedang dipinjam.</p>`;
                 return;
             }
 
-            container.innerHTML = books.map((book, idx) => `
-                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-wrap justify-between items-center gap-3">
-                    <div class="space-y-1">
-                        <span class="text-xs font-bold text-slate-800 block">${book.title}</span>
-                        <div class="flex items-center space-x-3 text-[11px] text-slate-500">
-                            <span><i class="fa-solid fa-tag text-slate-400 mr-1"></i>${book.category}</span>
-                            <span><i class="fa-solid fa-calendar text-slate-400 mr-1"></i>Pinjam: ${book.dateBorrowed}</span>
-                        </div>
+            list.innerHTML = activeBorrows.map(t => `
+                <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+                    <div>
+                        <p class="font-bold text-slate-700">${t.bookTitle}</p>
+                        <p class="text-slate-400">Kod: ${t.bookCode} | Masa: ${t.time}</p>
                     </div>
-                    <button onclick="handleReturnBook('${book.id}', '${book.title.replace(/'/g, "\\'")}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center space-x-1 shadow-sm transition">
-                        <i class="fa-solid fa-arrow-rotate-left"></i>
-                        <span>Sah Pulang</span>
+                    <button onclick="returnBook(${t.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded transition">
+                        Pulangkan
                     </button>
                 </div>
             `).join('');
         }
 
-        // Handle Submit Borrow Form
-        window.handleBorrowSubmit = async function(e) {
-            e.preventDefault();
-            if (!window.activeStudentData) return;
+        function updateStats() {
+            const borrows = transactions.filter(t => t.type === 'PINJAM').length;
+            const returns = transactions.filter(t => t.type === 'PULANG').length;
+            document.getElementById('stat-total-borrow').innerText = borrows;
+            document.getElementById('stat-total-return').innerText = returns;
+        }
 
-            const title = document.getElementById('input-book-title').value.trim();
-            const isbn = document.getElementById('input-book-isbn').value.trim() || 'PEROLEHAN-PSS';
-            const category = document.getElementById('input-book-category').value;
+        function renderLogs() {
+            const container = document.getElementById('recent-logs');
+            if(transactions.length === 0) return;
 
-            const newBook = {
-                id: 'BK-' + Math.floor(1000 + Math.random() * 9000),
-                title: title,
-                category: category,
-                dateBorrowed: new Date().toISOString().split('T')[0],
-                dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-            };
-
-            // Update local student mock memory
-            window.activeStudentData.borrowedBooks.push(newBook);
-            window.activeStudentData.nilamCount += 1;
-
-            // Save log to Firestore
-            if (window.currentUser) {
-                try {
-                    const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'logs');
-                    await addDoc(logsRef, {
-                        type: 'PINJAM',
-                        studentName: window.activeStudentData.name,
-                        studentId: window.activeStudentData.id,
-                        bookTitle: title,
-                        timestamp: Date.now()
-                    });
-                } catch (err) {
-                    console.error("Log error:", err);
-                }
-            }
-
-            showToast("Pinjaman Berjaya", `"${title}" telah direkodkan untuk ${window.activeStudentData.name}`);
-            document.getElementById('input-book-title').value = '';
-            document.getElementById('input-book-isbn').value = '';
-
-            // Refresh student card display
-            displayStudentForm(window.activeStudentData.id);
-        };
-
-        // Handle Return Book
-        window.handleReturnBook = async function(bookId, bookTitle) {
-            if (!window.activeStudentData) return;
-
-            // Remove book from borrowed array
-            window.activeStudentData.borrowedBooks = window.activeStudentData.borrowedBooks.filter(b => b.id !== bookId);
-
-            // Log to Firestore
-            if (window.currentUser) {
-                try {
-                    const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'logs');
-                    await addDoc(logsRef, {
-                        type: 'PULANG',
-                        studentName: window.activeStudentData.name,
-                        studentId: window.activeStudentData.id,
-                        bookTitle: bookTitle,
-                        timestamp: Date.now()
-                    });
-                } catch (err) {
-                    console.error("Log error:", err);
-                }
-            }
-
-            showToast("Pemulangan Berjaya", `"${bookTitle}" telah dipulangkan.`);
-            displayStudentForm(window.activeStudentData.id);
-        };
-
-        // Render Activity Logs in PC Dashboard
-        function renderActivityLogs(logs) {
-            const container = document.getElementById('activity-log-container');
-            if (!logs || logs.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-6 text-xs text-slate-400 italic">
-                        Belum ada sebarang transaksi hari ini.
+            container.innerHTML = transactions.slice(0, 5).map(t => `
+                <div class="flex items-center justify-between p-2.5 rounded-lg border ${t.type === 'PINJAM' ? 'bg-indigo-50/50 border-indigo-100' : 'bg-emerald-50/50 border-emerald-100'}">
+                    <div>
+                        <span class="font-bold ${t.type === 'PINJAM' ? 'text-indigo-600' : 'text-emerald-600'}">[${t.type}]</span>
+                        <span class="font-semibold text-slate-700">${t.studentName}</span>
+                        <p class="text-slate-500 text-[11px]">${t.bookTitle}</p>
                     </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = logs.map(log => {
-                const isPinjam = log.type === 'PINJAM';
-                const timeStr = new Date(log.timestamp).toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
-                
-                return `
-                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-xs">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-white text-[10px] ${isPinjam ? 'bg-indigo-600' : 'bg-emerald-600'}">
-                                ${isPinjam ? 'OUT' : 'IN'}
-                            </div>
-                            <div>
-                                <p class="font-bold text-slate-800 leading-snug">${log.studentName}</p>
-                                <p class="text-[11px] text-slate-500 truncate max-w-[170px]">${log.bookTitle}</p>
-                            </div>
-                        </div>
-                        <span class="text-[10px] font-mono text-slate-400">${timeStr}</span>
-                    </div>
-                `;
-            }).join('');
+                    <span class="text-slate-400 text-[10px]">${t.time}</span>
+                </div>
+            `).join('');
         }
 
-        // Update Today's Summary Statistics
-        function updateStats(logs) {
-            let borrows = 0;
-            let returns = 0;
-            logs.forEach(log => {
-                if (log.type === 'PINJAM') borrows++;
-                if (log.type === 'PULANG') returns++;
-            });
-            document.getElementById('stat-today-borrows').innerText = borrows;
-            document.getElementById('stat-today-returns').innerText = returns;
-        }
-
-        // Initialize Auth on Load
-        initAuth();
-    </script>
-
-    <script>
-        // Switch between PC Mode & Mobile Scanner Mode
-        function switchMode(mode) {
-            const pcView = document.getElementById('view-pc');
-            const mobileView = document.getElementById('view-mobile');
-            const btnPc = document.getElementById('btn-mode-pc');
-            const btnMobile = document.getElementById('btn-mode-mobile');
-
-            if (mode === 'pc') {
-                pcView.classList.remove('hidden');
-                mobileView.classList.add('hidden');
-
-                btnPc.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 bg-teal-500 text-white shadow";
-                btnMobile.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 text-indigo-300 hover:text-white";
-                stopMobileScanner();
-            } else {
-                pcView.classList.add('hidden');
-                mobileView.classList.remove('hidden');
-
-                btnMobile.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 bg-teal-500 text-white shadow";
-                btnPc.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 text-indigo-300 hover:text-white";
-            }
-        }
-
-        // Switch Tabs inside Student Card (Pinjam vs Pulang)
-        function switchTab(tab) {
-            const btnPinjam = document.getElementById('tab-btn-pinjam');
-            const btnPulang = document.getElementById('tab-btn-pulang');
-            const contentPinjam = document.getElementById('tab-content-pinjam');
-            const contentPulang = document.getElementById('tab-content-pulang');
-
-            if (tab === 'pinjam') {
-                btnPinjam.className = "pb-3 px-4 font-bold text-sm border-b-2 border-indigo-600 text-indigo-600 flex items-center space-x-2";
-                btnPulang.className = "pb-3 px-4 font-semibold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 flex items-center space-x-2";
-                contentPinjam.classList.remove('hidden');
-                contentPulang.classList.add('hidden');
-            } else {
-                btnPulang.className = "pb-3 px-4 font-bold text-sm border-b-2 border-indigo-600 text-indigo-600 flex items-center space-x-2";
-                btnPinjam.className = "pb-3 px-4 font-semibold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 flex items-center space-x-2";
-                contentPulang.classList.remove('hidden');
-                contentPinjam.classList.add('hidden');
-            }
-        }
-
-        // Simulation Scan from PC Dropdown
-        function simulateScan(studentId) {
-            if (!studentId) return;
-            window.sendActiveScanToFirebase(studentId);
-        }
-
-        // Trigger Mobile Scan (Simulation / Real)
-        function mobileTriggerScan(studentId) {
-            window.sendActiveScanToFirebase(studentId);
-            
-            // Show Mobile Toast feedback
-            const toast = document.getElementById('mobile-toast');
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
-        }
-
-        // HTML5 QR Code Camera Scanner Logic
-        function startMobileScanner() {
-            document.getElementById('camera-placeholder').classList.add('hidden');
-            document.getElementById('btn-start-camera').classList.add('hidden');
-            document.getElementById('btn-stop-camera').classList.remove('hidden');
-
-            window.html5QrCode = new Html5Qrcode("qr-reader");
-            const config = { fps: 10, qrbox: { width: 220, height: 220 } };
-
-            window.html5QrCode.start(
+        // Camera Scanner for Mobile Mode
+        function startScanner() {
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            html5QrcodeScanner.start(
                 { facingMode: "environment" },
-                config,
-                (decodedText, decodedResult) => {
-                    // Success callback
-                    mobileTriggerScan(decodedText.trim());
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    if(STUDENTS[decodedText]) {
+                        if(db) db.ref('active_scan').set(decodedText);
+                        const res = document.getElementById('mobile-scan-result');
+                        res.innerText = `✅ Success: ${STUDENTS[decodedText].name} (${decodedText})`;
+                        res.classList.remove('hidden');
+                        setTimeout(() => res.classList.add('hidden'), 3000);
+                    }
                 },
-                (errorMessage) => {
-                    // Scanning...
-                }
-            ).catch(err => {
-                console.error("Unable to start camera:", err);
-                alert("Kamera tidak dapat diakses atau peranti tidak menyokong imbasan. Sila gunakan simulasi ujian di bawah.");
-                stopMobileScanner();
-            });
-        }
-
-        function stopMobileScanner() {
-            if (window.html5QrCode) {
-                window.html5QrCode.stop().then(() => {
-                    window.html5QrCode.clear();
-                    document.getElementById('camera-placeholder').classList.remove('hidden');
-                    document.getElementById('btn-start-camera').classList.remove('hidden');
-                    document.getElementById('btn-stop-camera').classList.add('hidden');
-                }).catch(err => console.error(err));
-            }
-        }
-
-        // Toast Notification Function
-        function showToast(title, message) {
-            const notif = document.getElementById('notification-modal');
-            document.getElementById('notif-title').innerText = title;
-            document.getElementById('notif-message').innerText = message;
-
-            notif.classList.remove('translate-y-20', 'opacity-0');
-            notif.classList.add('translate-y-0', 'opacity-100');
-
-            setTimeout(() => {
-                notif.classList.remove('translate-y-0', 'opacity-100');
-                notif.classList.add('translate-y-20', 'opacity-0');
-            }, 3500);
+                (errorMessage) => {}
+            );
         }
     </script>
 </body>
