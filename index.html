@@ -68,7 +68,6 @@
             background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
         }
 
-        /* PENYESUAIAN WIDGET KAMERA HTML5 QRCODE */
         #reader button {
             background-color: #4f46e5 !important;
             color: white !important;
@@ -179,12 +178,7 @@
                 <span id="live-clock">Masa...</span>
             </div>
 
-            <!-- Right: Lock Button -->
-            <div class="flex items-center gap-2">
-                <button id="btn-lock-counter" onclick="lockCounter()" class="hidden px-3.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-semibold flex items-center gap-2 transition">
-                    <i data-lucide="lock" class="w-3.5 h-3.5"></i> Kunci Kaunter
-                </button>
-            </div>
+            <div></div>
         </header>
 
         <!-- Main Body Wrapper -->
@@ -332,33 +326,16 @@
                 </div>
             </section>
 
-            <!-- TAB 3: MOD PENGAWAS - KAUNTER PINJAMAN & PEMULANGAN BUKU -->
+            <!-- TAB 3: MOD PENGAWAS - KAUNTER PINJAMAN & PEMULANGAN BUKU (Sedia Terbuka Secara Default) -->
             <section id="content-kaunter" class="hidden space-y-6">
 
-                <!-- Password Lock Screen -->
-                <div id="kaunter-auth-lock" class="bg-slate-950 border border-slate-800 p-8 rounded-3xl max-w-md mx-auto text-center space-y-4 shadow-2xl my-12">
-                    <div class="w-14 h-14 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
-                        <i data-lucide="shield-alert" class="w-7 h-7"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-white">Kaunter Terkunci</h2>
-                        <p class="text-xs text-slate-400 mt-1">Sila masukkan kata laluan tugas untuk membuka Kaunter Pengawas.</p>
-                    </div>
-                    <div class="space-y-3">
-                        <input type="password" id="kaunter-password-input" placeholder="Kata Laluan Kaunter (Default: pss2026)" class="w-full bg-slate-900 border border-slate-800 text-center px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 font-bold tracking-widest">
-                        <button onclick="unlockKaunter()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
-                            <i data-lucide="key-round" class="w-4 h-4"></i> Buka Akses Kaunter
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Unlocked Active Kaunter -->
-                <div id="kaunter-active-view" class="hidden space-y-6">
+                <!-- Kaunter Terbuka Secara Automatik Tanpa Password -->
+                <div id="kaunter-active-view" class="space-y-6">
                     <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
                         <div class="flex items-center gap-3">
                             <i data-lucide="sparkles" class="w-5 h-5 text-amber-400"></i>
                             <div>
-                                <h3 class="text-xs font-bold text-white">Kaunter Imbasan Masa-Nyata (Aktif)</h3>
+                                <h3 class="text-xs font-bold text-white">Kaunter Imbasan Masa-Nyata (Sedia Terbuka)</h3>
                                 <p class="text-[11px] text-slate-400">Halakan imbasan QR telefon atau masukkan No. KP ahli di bawah.</p>
                             </div>
                         </div>
@@ -538,18 +515,33 @@
         </main>
     </div>
 
-    <!-- MOBILE SCANNER VIEW MODAL -->
+    <!-- MOBILE SCANNER VIEW MODAL (KESELAMATAN PIN/PASSWORD KETIKA INGIN IMBAS) -->
     <div id="view-mobile" class="hidden fixed inset-0 bg-slate-950 z-50 p-6 space-y-6 flex flex-col justify-center max-w-md mx-auto">
         <div class="flex justify-between items-center text-white">
             <h2 class="text-lg font-bold">Pengimbas QR Mobile</h2>
             <button onclick="switchMode('pc')" class="text-xs bg-slate-800 px-3.5 py-2 rounded-xl font-bold">Tutup</button>
         </div>
-        
-        <!-- ELEMENT KAMERA HP (STABIL BERSIH) -->
-        <div id="reader" class="overflow-hidden rounded-2xl border border-slate-800 bg-black min-h-[280px]"></div>
 
-        <div id="mobile-scan-result" class="hidden bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 rounded-xl text-xs font-semibold text-center">
-            ✅ Imbasan Berjaya Dihantar!
+        <!-- SKRIN KUNCI DI HANDPHONE TERLEBIH DAHULU -->
+        <div id="mobile-auth-lock" class="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center space-y-4">
+            <div class="w-12 h-12 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl flex items-center justify-center mx-auto">
+                <i data-lucide="lock" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-sm font-bold text-white">Kunci Pengimbas Pengawas</h3>
+            <p class="text-xs text-slate-400">Masukkan PIN tugas untuk mengaktifkan kamera pengimbas.</p>
+            <input type="password" id="mobile-pin-input" placeholder="PIN: 1234 atau pss2026" class="w-full bg-slate-950 border border-slate-800 text-center px-4 py-2 rounded-xl text-xs text-white font-bold tracking-widest">
+            <button onclick="unlockMobileScanner()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl text-xs transition">
+                Aktifkan Kamera Imbas
+            </button>
+        </div>
+
+        <!-- SKRIN KAMERA TERBUKA SELEPAS MEMASUKKAN KATA LALUAN -->
+        <div id="mobile-scanner-unlocked" class="hidden space-y-4">
+            <div id="reader" class="overflow-hidden rounded-2xl border border-slate-800 bg-black min-h-[260px]"></div>
+
+            <div id="mobile-scan-result" class="hidden bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 rounded-xl text-xs font-semibold text-center">
+                ✅ Imbasan Berjaya Dihantar Ke PC!
+            </div>
         </div>
     </div>
 
@@ -565,7 +557,7 @@
         let html5QrcodeScannerWidget = null;
         let isScanningActive = false;
         let masterStudents = [];
-        let isKaunterUnlocked = false;
+        let isMobileScannerUnlocked = false;
         let selectedMembersForPrint = new Set();
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -583,25 +575,16 @@
             }, 1000);
         }
 
-        function unlockKaunter() {
-            const pwd = document.getElementById('kaunter-password-input').value;
-            if(pwd === 'pss2026' || pwd === '1234') {
-                isKaunterUnlocked = true;
-                document.getElementById('kaunter-auth-lock').classList.add('hidden');
-                document.getElementById('kaunter-active-view').classList.remove('hidden');
-                document.getElementById('btn-lock-counter').classList.remove('hidden');
+        function unlockMobileScanner() {
+            const pwd = document.getElementById('mobile-pin-input').value;
+            if(pwd === '1234' || pwd === 'pss2026') {
+                isMobileScannerUnlocked = true;
+                document.getElementById('mobile-auth-lock').classList.add('hidden');
+                document.getElementById('mobile-scanner-unlocked').classList.remove('hidden');
+                startMobileScannerWidget();
             } else {
-                alert('Kata Laluan Kaunter Salah! Sila cuba lagi.');
+                alert('PIN Pengawas Salah! Sila cuba lagi.');
             }
-        }
-
-        function lockCounter() {
-            isKaunterUnlocked = false;
-            document.getElementById('kaunter-password-input').value = '';
-            document.getElementById('kaunter-active-view').classList.add('hidden');
-            document.getElementById('kaunter-auth-lock').classList.remove('hidden');
-            document.getElementById('btn-lock-counter').classList.add('hidden');
-            resetKaunter();
         }
 
         function initCharts() {
@@ -636,11 +619,14 @@
             });
         }
 
+        // FUNGSI SUPABASE REALTIME: 100% AUTOMATIK MELOMPAT PADA PC
         function initSupabaseRealtime() {
             channel.on('broadcast', { event: 'qr_scanned' }, (payload) => {
                 const icNumber = payload.payload.icNumber;
-                if(icNumber && isKaunterUnlocked) {
+                if (icNumber) {
+                    // Serta-merta tukar tab PC ke Kaunter Pinjaman
                     switchTab('kaunter');
+                    // Serta-merta buka rekod & borang murid
                     openStudentByIC(icNumber);
                     document.getElementById('sync-status').innerText = `Imbasan Diterima: ${icNumber}`;
                 }
@@ -1150,12 +1136,16 @@
             renderBorrowedList();
         }
 
-        // PENGIMBAS MOBILE STABIL MESRA PERANTI
         function switchMode(mode) {
             const viewMobile = document.getElementById('view-mobile');
             if(mode === 'mobile') {
                 viewMobile.classList.remove('hidden');
-                startMobileScannerWidget();
+                if (!isMobileScannerUnlocked) {
+                    document.getElementById('mobile-auth-lock').classList.remove('hidden');
+                    document.getElementById('mobile-scanner-unlocked').classList.add('hidden');
+                } else {
+                    startMobileScannerWidget();
+                }
             } else {
                 viewMobile.classList.add('hidden');
                 stopMobileScannerWidget();
@@ -1178,7 +1168,7 @@
                 await sendScanToSupabase(decodedText);
 
                 const res = document.getElementById('mobile-scan-result');
-                res.innerText = `✅ Imbasan Berjaya Dihantar: ${decodedText}`;
+                res.innerText = `✅ Imbasan Berjaya Dihantar Ke PC! (${decodedText})`;
                 res.classList.remove('hidden');
 
                 setTimeout(() => {
