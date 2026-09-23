@@ -3,209 +3,535 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Pusat Sumber Sekolah (PSS Digital)</title>
+    <title>PSS Digital Zon Pelangai - Sistem Pengurusan & Pinjaman Buku</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- HTML5 QR Code Scanner -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <!-- QRCode.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- SheetJS (xlsx) Library for Excel (.xls / .xlsx) Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- PapaParse Library for CSV Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        /* SEMBUNYIKAN WIDGET CETAKAN APABILA DIPAPARKAN PADA SKRIN */
+        #printable-cards-container {
+            display: none !important;
+        }
+
+        /* GAYA CETAKAN SAIZ KAD RFID / MATRIK (CR80: 85.6mm x 54mm) */
         @media print {
-            body * { visibility: hidden; }
-            #printable-cards, #printable-cards * { visibility: visible; }
-            #printable-cards { position: absolute; left: 0; top: 0; width: 100%; }
+            body * { visibility: hidden !important; }
+            #printable-cards-container, #printable-cards-container * { visibility: visible !important; }
+            #printable-cards-container { 
+                position: absolute !important; 
+                left: 0 !important; 
+                top: 0 !important; 
+                width: 100% !important; 
+                display: grid !important; 
+                grid-template-columns: repeat(2, 1fr) !important; 
+                gap: 15px !important;
+                padding: 10px !important;
+            }
             .no-print { display: none !important; }
+            
+            /* Dimensi Kad RFID Standard */
+            .rfid-card {
+                width: 85.6mm !important;
+                height: 54mm !important;
+                border: 2px solid #3730a3 !important;
+                border-radius: 12px !important;
+                padding: 8px 12px !important;
+                box-shadow: none !important;
+                page-break-inside: avoid !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                box-sizing: border-box !important;
+            }
+        }
+
+        .gradient-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
         }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 font-sans antialiased">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex font-sans antialiased">
 
-    <!-- Header Navigation -->
-    <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-50 no-print">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
-            <div class="flex items-center gap-3">
-                <div class="p-2 bg-indigo-700 rounded-lg">
-                    <i data-lucide="book-open" class="w-6 h-6 text-amber-400"></i>
+    <!-- ==================== SIDEBAR NAVIGATION ==================== -->
+    <aside class="w-64 bg-slate-950 border-r border-slate-800 flex flex-col justify-between shrink-0 no-print hidden md:flex">
+        <div>
+            <!-- Brand Logo Header -->
+            <div class="p-6 flex items-center gap-3 border-b border-slate-800/60">
+                <div class="p-2.5 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-600/30 text-white">
+                    <i data-lucide="book-open-check" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-wide">PSS DIGITAL ZON PELANGAI</h1>
-                    <p class="text-xs text-indigo-200">Sistem Imbasan Masa-Nyata (Supabase Realtime)</p>
+                    <h1 class="font-extrabold text-sm tracking-wide text-white">PSS DIGITAL</h1>
+                    <p class="text-[11px] font-semibold text-indigo-400" id="header-school-zone">ZON PELANGAI</p>
                 </div>
             </div>
 
-            <!-- Mode Switcher Buttons -->
-            <div class="flex items-center bg-indigo-950/60 p-1 rounded-xl border border-indigo-700/50">
-                <button id="btn-mode-pc" onclick="switchMode('pc')" class="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-900 shadow-md">
-                    <i data-lucide="laptop" class="w-4 h-4"></i>
-                    <span>Skrin Laptop / PC</span>
+            <!-- Navigation Links -->
+            <nav class="p-4 space-y-1.5 text-xs font-semibold">
+                <!-- TAB 1: DASHBOARD -->
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
                 </button>
-                <button id="btn-mode-mobile" onclick="switchMode('mobile')" class="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold text-indigo-200 hover:text-white transition-all">
-                    <i data-lucide="qr-code" class="w-4 h-4"></i>
-                    <span>Imbas QR (Telefon)</span>
+
+                <!-- TAB 2: SAHABAT PSS -->
+                <button onclick="switchTab('sahabat')" id="nav-sahabat" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+                    <i data-lucide="users-round" class="w-4 h-4"></i> Sahabat PSS (Ahli)
                 </button>
-            </div>
+
+                <p class="px-3 text-[10px] uppercase font-bold text-slate-500 tracking-wider mt-5 mb-2">Mod Pengawas PSS</p>
+
+                <!-- TAB 3: KAUNTER PINJAMAN & PEMULANGAN -->
+                <button onclick="switchTab('kaunter')" id="nav-kaunter" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+                    <i data-lucide="scan-line" class="w-4 h-4"></i> Pinjaman & Pemulangan
+                </button>
+
+                <!-- TAB 4: DAFTAR AHLI -->
+                <button onclick="switchTab('daftar-ahli')" id="nav-daftar-ahli" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> Daftar Ahli Baharu
+                </button>
+
+                <p class="px-3 text-[10px] uppercase font-bold text-slate-500 tracking-wider mt-5 mb-2">Mod Penyelaras PSS</p>
+
+                <!-- TAB 5: PANEL PENYELARAS -->
+                <button onclick="switchTab('admin')" id="nav-admin" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-amber-400 hover:bg-amber-500/10 transition">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i> Panel Penyelaras (Admin)
+                </button>
+            </nav>
         </div>
-    </header>
 
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto p-4 md:p-6 no-print">
+        <!-- School Info & Supabase Sync Footer -->
+        <div class="p-4 m-4 bg-slate-900 border border-slate-800 rounded-2xl text-xs space-y-2">
+            <div class="flex items-center gap-2 text-indigo-300 font-bold border-b border-slate-800 pb-2">
+                <i data-lucide="school" class="w-4 h-4 text-amber-400"></i>
+                <div>
+                    <p class="text-[11px] leading-none text-white" id="footer-school-name">SK Pelangai</p>
+                    <p class="text-[9px] text-slate-400" id="footer-school-code">Kod: CBA0001</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-emerald-400 font-bold pt-1">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                Supabase Realtime
+            </div>
+            <p id="sync-status" class="text-[10px] text-slate-400">Terhubung & sedia menerima imbasan.</p>
+        </div>
+    </aside>
 
-        <!-- ==================== MODE 1: LAPTOP / PC COUNTER ==================== -->
-        <div id="view-pc" class="space-y-6">
+    <!-- ==================== MAIN CONTENT AREA ==================== -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
 
-            <!-- Sub Navigation Tabs -->
-            <div class="flex border-b border-slate-200 gap-2">
-                <button onclick="switchTab('kaunter')" id="tab-kaunter" class="flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 border-indigo-600 text-indigo-600">
-                    <i data-lucide="scan" class="w-4 h-4"></i> Kaunter Sirkulasi
-                </button>
-                <button onclick="switchTab('qr-murid')" id="tab-qr-murid" class="flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700">
-                    <i data-lucide="qr-code" class="w-4 h-4"></i> Kad QR Murid
+        <!-- Top Header Bar -->
+        <header class="bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-6 py-3.5 flex justify-between items-center sticky top-0 z-40 no-print">
+            <!-- Left: Device Status & Mode Toggle -->
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full text-xs font-bold flex items-center gap-1.5">
+                    <i data-lucide="laptop" class="w-3.5 h-3.5"></i> Skrin Laptop Kaunter
+                </span>
+                <button onclick="switchMode('mobile')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-full text-xs font-semibold flex items-center gap-1.5 transition">
+                    <i data-lucide="qr-code" class="w-3.5 h-3.5 text-indigo-400"></i> Mod Imbas QR (Telefon)
                 </button>
             </div>
 
-            <!-- TAB 1: KAUNTER SIRKULASI -->
-            <div id="content-kaunter" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div class="lg:col-span-12 bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                        <span class="relative flex h-3 w-3">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                        </span>
+            <!-- Center: Live Date & Time -->
+            <div class="hidden lg:flex items-center gap-2 bg-slate-900 border border-slate-800/80 px-4 py-1.5 rounded-full text-xs font-semibold text-slate-300">
+                <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span id="live-clock">Masa...</span>
+            </div>
+
+            <!-- Right: Lock Button -->
+            <div class="flex items-center gap-2">
+                <button id="btn-lock-counter" onclick="lockCounter()" class="hidden px-3.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-semibold flex items-center gap-2 transition">
+                    <i data-lucide="lock" class="w-3.5 h-3.5"></i> Kunci Kaunter
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Body Wrapper -->
+        <main class="p-6 md:p-8 space-y-8 flex-1">
+
+            <!-- TAB 1: DASHBOARD UTAMA -->
+            <section id="content-dashboard" class="space-y-6">
+                <div>
+                    <h2 class="text-xl font-extrabold text-white">Dashboard Pengurusan PSS</h2>
+                    <p class="text-xs text-slate-400 mt-1">Ringkasan koleksi buku, statistik pinjaman, dan maklumat ahli sekolah.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl flex justify-between items-start">
                         <div>
-                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status Sync PC</p>
-                            <p id="sync-status" class="text-sm font-bold text-slate-700">Terhubung & Menunggu imbasan dari telefon...</p>
+                            <p class="text-xs font-semibold text-slate-400">Jumlah Murid Induk</p>
+                            <h3 id="stat-total-students" class="text-3xl font-black text-white mt-1">0</h3>
+                            <p class="text-[11px] text-indigo-400 font-medium mt-1">Data APDM/idME</p>
+                        </div>
+                        <div class="p-3 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl">
+                            <i data-lucide="school" class="w-6 h-6"></i>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200">
-                        <span class="text-xs text-slate-500 font-medium">Uji Simulasi PC:</span>
-                        <select id="sim-select" class="text-xs p-1.5 border border-slate-300 rounded bg-white font-medium">
-                            <option value="M001">Ahmad Albab (5 Bestari)</option>
-                            <option value="M002">Siti Nurhaliza (4 Bestari)</option>
-                            <option value="M003">Upin Ipin (3 Cerdik)</option>
-                        </select>
-                        <button onclick="simulateScan()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded font-semibold transition">
-                            Imbas
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400">Ahli Sahabat PSS</p>
+                            <h3 id="stat-total-members" class="text-3xl font-black text-emerald-400 mt-1">0</h3>
+                            <p class="text-[11px] text-emerald-400 font-medium mt-1">Berdaftar</p>
+                        </div>
+                        <div class="p-3 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl">
+                            <i data-lucide="users-round" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400">Pinjaman Hari Ini</p>
+                            <h3 id="stat-total-borrow" class="text-3xl font-black text-amber-400 mt-1">0</h3>
+                            <p class="text-[11px] text-amber-400 font-medium mt-1">Transaksi pinjam</p>
+                        </div>
+                        <div class="p-3 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl">
+                            <i data-lucide="book-open" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400">Pemulangan Hari Ini</p>
+                            <h3 id="stat-total-return" class="text-3xl font-black text-purple-400 mt-1">0</h3>
+                            <p class="text-[11px] text-purple-400 font-medium mt-1">Transaksi pulang</p>
+                        </div>
+                        <div class="p-3 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl">
+                            <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-8 bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
+                        <h3 class="text-xs font-bold text-white flex items-center gap-2">
+                            <i data-lucide="trending-up" class="w-4 h-4 text-indigo-400"></i> Trend Pinjaman Buku Mingguan
+                        </h3>
+                        <div class="h-64">
+                            <canvas id="chartPinjaman"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-4 bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
+                        <h3 class="text-xs font-bold text-white flex items-center gap-2">
+                            <i data-lucide="pie-chart" class="w-4 h-4 text-emerald-400"></i> Pecahan Ahli Mengikut Jantina
+                        </h3>
+                        <div class="h-64 flex items-center justify-center">
+                            <canvas id="chartKategori"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: SAHABAT PSS (JADUAL AHLI SAHAJA) -->
+            <section id="content-sahabat" class="hidden space-y-6">
+                <div class="bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-white">Senarai Ahli Sahabat PSS</h2>
+                            <p class="text-xs text-slate-400">Tandakan (tick) ahli yang dikehendaki untuk mencetak Kad QR saiz RFID/Matrik.</p>
+                        </div>
+                        <div class="flex items-center gap-2 no-print">
+                            <button onclick="toggleSelectAllMembers(true)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold transition">
+                                Pilih Semua
+                            </button>
+                            <button onclick="toggleSelectAllMembers(false)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold transition">
+                                Nyahpilih
+                            </button>
+                            <button onclick="generateAndPrintSelectedCards()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                                <i data-lucide="printer" class="w-4 h-4"></i> Cetak Kad Dipilih (<span id="selected-count-badge">0</span>)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bar Carian Penuh & Tapisan Mengikut Tahun 1 hingga 6 -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 no-print">
+                        <div class="md:col-span-8">
+                            <input type="text" id="search-member-input" onkeyup="filterMembers()" placeholder="Cari Nama Ahli atau No. KP..." class="w-full bg-slate-900 border border-slate-800 px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div class="md:col-span-4">
+                            <select id="filter-class-dropdown" onchange="filterMembers()" class="w-full bg-slate-900 border border-slate-800 px-3 py-2.5 rounded-xl text-xs text-white font-semibold focus:outline-none focus:border-indigo-500">
+                                <option value="">Semua Kelas</option>
+                                <option value="1">Tahun 1</option>
+                                <option value="2">Tahun 2</option>
+                                <option value="3">Tahun 3</option>
+                                <option value="4">Tahun 4</option>
+                                <option value="5">Tahun 5</option>
+                                <option value="6">Tahun 6</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Jadual Ahli Berdaftar (Tanpa Kad Terpapar Di Bawah) -->
+                    <div class="overflow-x-auto no-print">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 font-bold">
+                                    <th class="p-3 w-10 text-center">
+                                        <input type="checkbox" id="master-member-checkbox" onchange="toggleSelectAllMembers(this.checked)" class="w-4 h-4 accent-indigo-600 rounded">
+                                    </th>
+                                    <th class="p-3">Nama Ahli</th>
+                                    <th class="p-3">No. KP / MyKid</th>
+                                    <th class="p-3">Kelas</th>
+                                    <th class="p-3">Jantina</th>
+                                    <th class="p-3 text-right">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="member-table-rows" class="divide-y divide-slate-800/60">
+                                <tr>
+                                    <td colspan="6" class="text-center py-8 text-slate-500 italic">Tiada ahli Sahabat PSS yang berdaftar lagi.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- WIDGET CETAKAN KAD (HANYA AKTIF & MUNCUL BILA WAKTU CETAK / PRINT) -->
+                    <div id="printable-cards-container"></div>
+                </div>
+            </section>
+
+            <!-- TAB 3: MOD PENGAWAS - KAUNTER PINJAMAN & PEMULANGAN BUKU -->
+            <section id="content-kaunter" class="hidden space-y-6">
+
+                <!-- Password Lock Screen -->
+                <div id="kaunter-auth-lock" class="bg-slate-950 border border-slate-800 p-8 rounded-3xl max-w-md mx-auto text-center space-y-4 shadow-2xl my-12">
+                    <div class="w-14 h-14 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+                        <i data-lucide="shield-alert" class="w-7 h-7"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">Kaunter Terkunci</h2>
+                        <p class="text-xs text-slate-400 mt-1">Sila masukkan kata laluan tugas untuk membuka Kaunter Pengawas.</p>
+                    </div>
+                    <div class="space-y-3">
+                        <input type="password" id="kaunter-password-input" placeholder="Kata Laluan Kaunter (Default: pss2026)" class="w-full bg-slate-900 border border-slate-800 text-center px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 font-bold tracking-widest">
+                        <button onclick="unlockKaunter()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
+                            <i data-lucide="key-round" class="w-4 h-4"></i> Buka Akses Kaunter
                         </button>
                     </div>
                 </div>
 
-                <!-- Left Column: Student Details -->
-                <div class="lg:col-span-7 space-y-6">
-                    <div id="student-card-empty" class="bg-white p-12 rounded-2xl shadow-sm border border-slate-200 text-center flex flex-col items-center justify-center min-h-[380px]">
-                        <div class="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-4">
-                            <i data-lucide="qr-code" class="w-8 h-8"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-700">Sedia Untuk Imbasan Murid</h3>
-                        <p class="text-sm text-slate-500 max-w-md mt-1">Imbas Kad QR Murid dari telefon bimbit. Borang akan automatik terbuka di sini.</p>
-                    </div>
-
-                    <div id="student-card-active" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="bg-indigo-600 p-4 text-white flex justify-between items-center">
+                <!-- Unlocked Active Kaunter -->
+                <div id="kaunter-active-view" class="hidden space-y-6">
+                    <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-amber-400"></i>
                             <div>
-                                <span class="bg-indigo-800 text-indigo-100 text-xs px-2.5 py-0.5 rounded-full font-semibold" id="disp-id">ID: M001</span>
-                                <h2 class="text-xl font-bold mt-1" id="disp-name">Ahmad Albab</h2>
-                                <p class="text-xs text-indigo-200" id="disp-class">Kelas: 5 Bestari</p>
+                                <h3 class="text-xs font-bold text-white">Kaunter Imbasan Masa-Nyata (Aktif)</h3>
+                                <p class="text-[11px] text-slate-400">Halakan imbasan QR telefon atau masukkan No. KP ahli di bawah.</p>
                             </div>
-                            <button onclick="resetKaunter()" class="text-indigo-200 hover:text-white text-xs bg-indigo-700 hover:bg-indigo-800 px-3 py-1.5 rounded-lg transition">
-                                Selesai / Buka Baru
+                        </div>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <input type="text" id="sim-ic-input" placeholder="Masukkan No. KP Ahli..." class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 w-full md:w-64">
+                            <button onclick="simulateScanIC()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                                <i data-lucide="search" class="w-3.5 h-3.5"></i> Cari
                             </button>
                         </div>
+                    </div>
 
-                        <div class="p-6">
-                            <div class="flex border-b border-slate-200 mb-6">
-                                <button id="btn-tab-borrow" onclick="setFormTab('borrow')" class="flex-1 py-2 text-center font-bold text-sm border-b-2 border-indigo-600 text-indigo-600">Pinjam Buku</button>
-                                <button id="btn-tab-return" onclick="setFormTab('return')" class="flex-1 py-2 text-center font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700">Pulangkan Buku</button>
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div class="lg:col-span-7">
+                            <div id="student-card-empty" class="bg-slate-950 border border-slate-800/80 rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[420px]">
+                                <div class="w-20 h-20 bg-indigo-500/10 text-indigo-400 rounded-3xl border border-indigo-500/20 flex items-center justify-center mb-4 shadow-xl">
+                                    <i data-lucide="scan-line" class="w-10 h-10"></i>
+                                </div>
+                                <h3 class="text-lg font-bold text-white">Sedia Untuk Imbasan Ahli</h3>
+                                <p class="text-xs text-slate-400 max-w-sm mt-1 leading-relaxed">Imbas Kad QR Murid dari telefon bimbit. Borang pinjaman atau pemulangan akan terbuka secara automatik.</p>
                             </div>
 
-                            <form id="form-borrow" onsubmit="handleBorrow(event)" class="space-y-4">
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Judul Buku / Tajuk</label>
-                                    <input type="text" id="input-book-title" required placeholder="Cth: Sang Kancil & Buaya" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <div id="student-card-active" class="hidden bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+                                <div class="gradient-card p-6 text-white flex justify-between items-start">
+                                    <div class="space-y-1">
+                                        <span class="bg-white/20 backdrop-blur-md text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider" id="disp-id">KP: -</span>
+                                        <h2 class="text-2xl font-extrabold mt-2" id="disp-name">-</h2>
+                                        <div class="flex items-center gap-3 text-xs text-indigo-100 pt-1">
+                                            <span id="disp-class" class="font-semibold">Kelas: -</span> • 
+                                            <span id="disp-gender">Jantina: -</span>
+                                        </div>
+                                    </div>
+                                    <button onclick="resetKaunter()" class="bg-white/10 hover:bg-white/20 text-white text-xs px-3.5 py-2 rounded-xl backdrop-blur-md transition font-semibold flex items-center gap-1.5">
+                                        <i data-lucide="x" class="w-4 h-4"></i> Selesai
+                                    </button>
                                 </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Kod Buku (Opsional)</label>
-                                    <input type="text" id="input-book-code" placeholder="Cth: B-2024-089" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                </div>
-                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2">
-                                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Simpan Rekod Pinjaman
-                                </button>
-                            </form>
 
-                            <div id="form-return" class="hidden space-y-4">
-                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Buku Sedang Dipinjam</h4>
-                                <div id="borrowed-list" class="space-y-2"></div>
+                                <div class="p-6 space-y-6">
+                                    <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+                                        <button id="btn-tab-borrow" onclick="setFormTab('borrow')" class="flex-1 py-2 text-center font-bold text-xs rounded-lg bg-indigo-600 text-white shadow-md">Pinjam Buku</button>
+                                        <button id="btn-tab-return" onclick="setFormTab('return')" class="flex-1 py-2 text-center font-bold text-xs rounded-lg text-slate-400 hover:text-white">Pulangkan Buku</button>
+                                    </div>
+
+                                    <form id="form-borrow" onsubmit="handleBorrow(event)" class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Judul Buku / Tajuk</label>
+                                            <input type="text" id="input-book-title" required placeholder="Masukkan judul buku..." class="w-full bg-slate-900 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Kod Perolehan Buku (Opsional)</label>
+                                            <input type="text" id="input-book-code" placeholder="Cth: B-2024-001" class="w-full bg-slate-900 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
+                                        </div>
+                                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2">
+                                            <i data-lucide="plus-circle" class="w-4 h-4"></i> Rekod Pinjaman Buku
+                                        </button>
+                                    </form>
+
+                                    <div id="form-return" class="hidden space-y-3">
+                                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Senarai Buku Sedang Dipinjam</h4>
+                                        <div id="borrowed-list" class="space-y-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-5 space-y-6">
+                            <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl space-y-4">
+                                <h3 class="text-xs font-bold text-white flex items-center justify-between">
+                                    <span class="flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-indigo-400"></i> Log Transaksi Terkini</span>
+                                    <span class="text-[10px] text-slate-500">Masa-Nyata</span>
+                                </h3>
+                                <div id="recent-logs" class="space-y-2 text-xs">
+                                    <p class="text-slate-500 italic text-center py-6">Belum ada sebarang transaksi hari ini.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- Right Column: Stats -->
-                <div class="lg:col-span-5 space-y-6">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-xs text-slate-500 font-medium">Total Pinjaman</p>
-                            <p id="stat-total-borrow" class="text-2xl font-black text-indigo-600 mt-1">0</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-xs text-slate-500 font-medium">Total Pemulangan</p>
-                            <p id="stat-total-return" class="text-2xl font-black text-emerald-600 mt-1">0</p>
-                        </div>
-                    </div>
+            <!-- TAB 4: MOD PENGAWAS - DAFTAR AHLI BAHARU -->
+            <section id="content-daftar-ahli" class="hidden space-y-6">
+                <div class="bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
+                    <h2 class="text-lg font-bold text-white">Daftar Ahli Sahabat PSS Baharu</h2>
+                    <p class="text-xs text-slate-400">Cari nama murid dari rekod sekolah APDM dan klik "Daftar Ahli".</p>
 
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                        <h3 class="font-bold text-slate-700 text-sm mb-4 flex items-center gap-2">
-                            <i data-lucide="history" class="w-4 h-4 text-slate-400"></i> Log Terkini
-                        </h3>
-                        <div id="recent-logs" class="space-y-3 text-xs">
-                            <p class="text-slate-400 italic text-center py-4">Belum ada sebarang transaksi hari ini.</p>
-                        </div>
+                    <input type="text" id="search-student-input" onkeyup="searchMasterStudents()" placeholder="Cari Nama, No. KP, atau Kelas..." class="w-full bg-slate-900 border border-slate-800 px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 font-bold">
+                                    <th class="p-3">Nama Murid</th>
+                                    <th class="p-3">No. KP</th>
+                                    <th class="p-3">Kelas Singkat</th>
+                                    <th class="p-3">Jantina</th>
+                                    <th class="p-3">Status Ahli PSS</th>
+                                    <th class="p-3 text-right">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="master-student-rows" class="divide-y divide-slate-800/60">
+                                <tr>
+                                    <td colspan="6" class="text-center py-8 text-slate-500 italic">Tiada rekod murid. Sila import data APDM di Panel Penyelaras.</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- TAB 2: KAD QR MURID -->
-            <div id="content-qr-murid" class="hidden space-y-6">
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-800">Senarai & Cetakan Kad QR Murid</h2>
-                        <p class="text-xs text-slate-500">Gunakan Kad QR ini untuk diimbas menggunakan telefon bimbit.</p>
+            <!-- TAB 5: MOD PENYELARAS (ADMIN) -->
+            <section id="content-admin" class="hidden space-y-6">
+                <div id="admin-auth" class="bg-slate-950 border border-slate-800 p-8 rounded-3xl max-w-md mx-auto text-center space-y-4 shadow-2xl">
+                    <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center mx-auto">
+                        <i data-lucide="lock" class="w-6 h-6"></i>
                     </div>
-                    <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2">
-                        <i data-lucide="printer" class="w-4 h-4"></i> Cetak Kad QR Murid
+                    <h2 class="text-lg font-bold text-white">Akses Panel Penyelaras PSS</h2>
+                    <p class="text-xs text-slate-400">Sila masukkan PIN Pentadbir untuk menguruskan data murid.</p>
+                    <input type="password" id="admin-pin-input" placeholder="PIN Default: 1234" class="w-full bg-slate-900 border border-slate-800 text-center px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 font-bold tracking-widest">
+                    <button onclick="verifyAdminPIN()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                        Log Masuk Admin
                     </button>
                 </div>
 
-                <div id="printable-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-            </div>
+                <div id="admin-dashboard" class="hidden space-y-6">
+                    <!-- Import Excel (.xls/.xlsx) atau CSV APDM -->
+                    <div class="bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i data-lucide="upload-cloud" class="w-5 h-5 text-indigo-400"></i> Import Data Induk APDM / idME (Excel .xls/.xlsx atau .csv)
+                        </h2>
+                        <p class="text-xs text-slate-400">Muat naik fail Excel terus dari APDM/idME. Sistem mengira tahun kelas semasa murid secara automatik mengikut tahun lahir No. KP.</p>
 
-        </div>
+                        <div class="border-2 border-dashed border-slate-800 rounded-2xl p-8 text-center bg-slate-900/40 space-y-3">
+                            <i data-lucide="file-spreadsheet" class="w-10 h-10 text-slate-500 mx-auto"></i>
+                            <input type="file" id="excel-file-input" accept=".xls,.xlsx,.csv" class="hidden" onchange="handleExcelImport(event)">
+                            <div>
+                                <button onclick="document.getElementById('excel-file-input').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+                                    Pilih Fail Excel / CSV APDM
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-slate-500">Menyokong fail Excel APDM seperti <b>data murid.xls</b> terus tanpa perlu menukar format.</p>
+                        </div>
+                    </div>
 
-        <!-- ==================== MODE 2: MOBILE QR SCANNER ==================== -->
-        <div id="view-mobile" class="hidden max-w-md mx-auto space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 text-center space-y-4">
-                <div class="inline-flex p-3 bg-amber-100 text-amber-700 rounded-full">
-                    <i data-lucide="camera" class="w-8 h-8"></i>
+                    <!-- Tambah Murid Manual -->
+                    <div class="bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
+                        <h3 class="text-sm font-bold text-white">Tambah Murid Induk (Manual)</h3>
+                        <form onsubmit="handleManualStudentAdd(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" id="add-name" required placeholder="Nama Murid" class="bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl text-xs text-white">
+                            <input type="text" id="add-ic" required placeholder="No. KP (Tanpa -)" class="bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl text-xs text-white">
+                            <input type="text" id="add-class" required placeholder="Nama Kelas (Cth: AZKIYA)" class="bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl text-xs text-white">
+                            <button type="submit" class="md:col-span-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                                + Simpan Rekod Murid Manual
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Senarai & Padam Rekod Murid -->
+                    <div class="bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
+                        <h3 class="text-sm font-bold text-white">Pengurusan & Padam Rekod Murid</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-slate-400 font-bold">
+                                        <th class="p-3">Nama</th>
+                                        <th class="p-3">No. KP</th>
+                                        <th class="p-3">Kelas</th>
+                                        <th class="p-3 text-right">Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-delete-rows" class="divide-y divide-slate-800/60"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <h2 class="text-xl font-bold text-slate-800">Pengimbas Kad QR Murid</h2>
-                <p class="text-xs text-slate-500">Tekan butang pengimbas di bawah. Izinkan akses kamera apabila diminta oleh pelayar web.</p>
+            </section>
 
-                <div id="reader" class="overflow-hidden rounded-xl border border-slate-300"></div>
+        </main>
+    </div>
 
-                <div id="mobile-scan-result" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-xs font-semibold">
-                    ✅ Berjaya dihantar ke PC!
-                </div>
-            </div>
+    <!-- MOBILE SCANNER VIEW -->
+    <div id="view-mobile" class="hidden fixed inset-0 bg-slate-950 z-50 p-6 space-y-6 flex flex-col justify-center max-w-md mx-auto">
+        <div class="flex justify-between items-center text-white">
+            <h2 class="text-lg font-bold">Pengimbas QR Mobile</h2>
+            <button onclick="switchMode('pc')" class="text-xs bg-slate-800 px-3 py-1.5 rounded-lg">Tutup</button>
         </div>
+        <div id="reader" class="overflow-hidden rounded-2xl border border-slate-800"></div>
+        <div id="mobile-scan-result" class="hidden bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 rounded-xl text-xs font-semibold text-center">
+            ✅ Berjaya dihantar!
+        </div>
+    </div>
 
-    </main>
-
+    <!-- Application Script -->
     <script>
         const SUPABASE_URL = "https://dvphbyrurvxnvofjkhjz.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2cGhieXJ1cnZ4bnZvZmpraGp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNDc4ODAsImV4cCI6MjEwNTcyMzg4MH0.aOS1oJPowsunCtvF7hFRZeQdrrwfH8a9bDC7zrQiONI";
@@ -213,158 +539,521 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const channel = supabaseClient.channel('pss_scan_channel');
 
-        const STUDENTS = {
-            'M001': { id: 'M001', name: 'Ahmad Albab', class: '5 Bestari' },
-            'M002': { id: 'M002', name: 'Siti Nurhaliza', class: '4 Bestari' },
-            'M003': { id: 'M003', name: 'Upin Ipin', class: '3 Cerdik' }
-        };
-
-        let currentStudentId = null;
+        let currentStudentIC = null;
         let scannerWidget = null;
-        let transactions = [];
+        let masterStudents = [];
+        let isKaunterUnlocked = false;
+        let selectedMembersForPrint = new Set();
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            renderQRCards();
             initSupabaseRealtime();
+            loadMasterStudents();
+            initCharts();
+            startLiveClock();
         });
+
+        function startLiveClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('live-clock').innerText = now.toLocaleDateString('ms-MY', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) + ' - ' + now.toLocaleTimeString('ms-MY');
+            }, 1000);
+        }
+
+        function unlockKaunter() {
+            const pwd = document.getElementById('kaunter-password-input').value;
+            if(pwd === 'pss2026' || pwd === '1234') {
+                isKaunterUnlocked = true;
+                document.getElementById('kaunter-auth-lock').classList.add('hidden');
+                document.getElementById('kaunter-active-view').classList.remove('hidden');
+                document.getElementById('btn-lock-counter').classList.remove('hidden');
+            } else {
+                alert('Kata Laluan Kaunter Salah! Sila cuba lagi.');
+            }
+        }
+
+        function lockCounter() {
+            isKaunterUnlocked = false;
+            document.getElementById('kaunter-password-input').value = '';
+            document.getElementById('kaunter-active-view').classList.add('hidden');
+            document.getElementById('kaunter-auth-lock').classList.remove('hidden');
+            document.getElementById('btn-lock-counter').classList.add('hidden');
+            resetKaunter();
+        }
+
+        function initCharts() {
+            const ctx1 = document.getElementById('chartPinjaman').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat'],
+                    datasets: [{
+                        label: 'Pinjaman Buku',
+                        data: [12, 19, 15, 25, 22],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            const ctx2 = document.getElementById('chartKategori').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Lelaki', 'Perempuan'],
+                    datasets: [{
+                        data: [55, 45],
+                        backgroundColor: ['#6366f1', '#ec4899']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
 
         function initSupabaseRealtime() {
             channel.on('broadcast', { event: 'qr_scanned' }, (payload) => {
-                const studentId = payload.payload.studentId;
-                if(studentId && STUDENTS[studentId]) {
-                    openStudentForm(studentId);
-                    document.getElementById('sync-status').innerText = `Imbasan Diterima: ${STUDENTS[studentId].name} (${new Date().toLocaleTimeString()})`;
+                const icNumber = payload.payload.icNumber;
+                if(icNumber && isKaunterUnlocked) {
+                    openStudentByIC(icNumber);
+                    document.getElementById('sync-status').innerText = `Imbasan Diterima: ${icNumber}`;
                 }
-            }).subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    document.getElementById('sync-status').innerText = "Terhubung dengan Supabase Realtime!";
-                }
-            });
+            }).subscribe();
         }
 
-        async function sendScanToSupabase(studentId) {
+        async function sendScanToSupabase(icNumber) {
             await channel.send({
                 type: 'broadcast',
                 event: 'qr_scanned',
-                payload: { studentId: studentId }
+                payload: { icNumber: icNumber }
             });
         }
 
-        function switchMode(mode) {
-            const btnPC = document.getElementById('btn-mode-pc');
-            const btnMobile = document.getElementById('btn-mode-mobile');
-            const viewPC = document.getElementById('view-pc');
-            const viewMobile = document.getElementById('view-mobile');
+        function getGenderFromIC(ic) {
+            const cleanIC = ic.toString().replace(/[^0-9]/g, '');
+            if(!cleanIC) return 'Lelaki';
+            const lastDigit = parseInt(cleanIC.slice(-1));
+            return lastDigit % 2 === 0 ? 'Perempuan' : 'Lelaki';
+        }
 
-            if(mode === 'pc') {
-                viewPC.classList.remove('hidden');
-                viewMobile.classList.add('hidden');
-                btnPC.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-slate-900 shadow-md";
-                btnMobile.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold text-indigo-200 hover:text-white";
-                if(scannerWidget) scannerWidget.clear();
-            } else {
-                viewPC.classList.add('hidden');
-                viewMobile.classList.remove('hidden');
-                btnMobile.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-slate-900 shadow-md";
-                btnPC.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold text-indigo-200 hover:text-white";
-                initMobileScanner();
+        function calculateCurrentClassFromIC(icRaw, namaKelasAPDM) {
+            const cleanIC = icRaw.toString().replace(/[^0-9]/g, '');
+            if (cleanIC.length < 6) return { shortClass: namaKelasAPDM || '-', fullClass: namaKelasAPDM || '-' };
+
+            let birthYearTwoDigits = parseInt(cleanIC.substring(0, 2));
+            let birthYear = (birthYearTwoDigits > 50) ? (1900 + birthYearTwoDigits) : (2000 + birthYearTwoDigits);
+            
+            const currentYear = new Date().getFullYear();
+            const age = currentYear - birthYear;
+
+            let calculatedYear = age - 6; 
+
+            if (calculatedYear < 1) calculatedYear = 1;
+            if (calculatedYear > 6) calculatedYear = 6;
+
+            let classLetter = '';
+            let namaKelasBersih = '';
+            if (namaKelasAPDM && namaKelasAPDM !== '-') {
+                namaKelasBersih = namaKelasAPDM.toString().trim();
+                classLetter = namaKelasBersih.charAt(0).toUpperCase();
+            }
+
+            const shortClass = `${calculatedYear}${classLetter}`;
+            const fullClass = `Tahun ${calculatedYear} ${namaKelasBersih}`;
+
+            return { shortClass, fullClass };
+        }
+
+        async function loadMasterStudents() {
+            const { data } = await supabaseClient.from('master_students').select('*');
+            if(data) {
+                masterStudents = data;
+                updateDashboardStats();
+                renderMasterTable(masterStudents);
+                renderMembersTableOnly();
+                renderAdminDeleteTable();
             }
         }
 
-        function initMobileScanner() {
-            if (scannerWidget) return;
+        function updateDashboardStats() {
+            document.getElementById('stat-total-students').innerText = masterStudents.length;
+            const membersCount = masterStudents.filter(s => s.is_member).length;
+            document.getElementById('stat-total-members').innerText = membersCount;
+        }
 
-            scannerWidget = new Html5QrcodeScanner("reader", {
-                fps: 10,
-                qrbox: { width: 220, height: 220 },
-                rememberLastUsedCamera: true,
-                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+        function renderMasterTable(students) {
+            const tbody = document.getElementById('master-student-rows');
+            if(students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-500 italic">Tiada data murid. Sila import data di Panel Penyelaras.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = students.map(s => `
+                <tr class="hover:bg-slate-900/50">
+                    <td class="p-3 font-semibold text-white">${s.full_name}</td>
+                    <td class="p-3 text-slate-400">${s.ic_number}</td>
+                    <td class="p-3 font-bold text-indigo-400">${s.short_class}</td>
+                    <td class="p-3 text-slate-400">${s.gender}</td>
+                    <td class="p-3">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${s.is_member ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400'}">
+                            ${s.is_member ? 'AHLI PSS' : 'BUKAN AHLI'}
+                        </span>
+                    </td>
+                    <td class="p-3 text-right">
+                        ${!s.is_member ? 
+                            `<button onclick="toggleMembership('${s.ic_number}', true)" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded-lg text-[11px] font-bold">Daftar Ahli</button>` :
+                            `<button onclick="toggleMembership('${s.ic_number}', false)" class="text-rose-400 hover:underline text-[11px]">Batal Ahli</button>`
+                        }
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderMembersTableOnly(customMembersList = null) {
+            const tbody = document.getElementById('member-table-rows');
+            const members = customMembersList || masterStudents.filter(s => s.is_member);
+
+            if(members.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-500 italic">Tiada ahli Sahabat PSS dijumpai.</td></tr>`;
+                updateSelectedCountBadge();
+                return;
+            }
+
+            tbody.innerHTML = members.map(s => `
+                <tr class="hover:bg-slate-900/50">
+                    <td class="p-3 text-center">
+                        <input type="checkbox" class="member-select-checkbox w-4 h-4 accent-indigo-600 rounded" value="${s.ic_number}" ${selectedMembersForPrint.has(s.ic_number) ? 'checked' : ''} onchange="toggleMemberSelection('${s.ic_number}', this.checked)">
+                    </td>
+                    <td class="p-3 font-semibold text-white">${s.full_name}</td>
+                    <td class="p-3 text-slate-400 font-mono">${s.ic_number}</td>
+                    <td class="p-3 font-bold text-indigo-400">${s.short_class}</td>
+                    <td class="p-3 text-slate-400">${s.gender}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="printSingleCard('${s.ic_number}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg text-[11px] font-semibold border border-slate-700">Cetak QR</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            updateSelectedCountBadge();
+        }
+
+        // Tapisan Teks + Dropdown Angka Tahun (1 hingga 6)
+        function filterMembers() {
+            const textQuery = document.getElementById('search-member-input').value.toLowerCase();
+            const yearQuery = document.getElementById('filter-class-dropdown').value; 
+
+            const filtered = masterStudents.filter(s => {
+                if (!s.is_member) return false;
+
+                const matchesYear = !yearQuery || (s.short_class && s.short_class.startsWith(yearQuery)) || (s.full_class && s.full_class.includes(`Tahun ${yearQuery}`));
+                
+                const matchesText = !textQuery || 
+                    s.full_name.toLowerCase().includes(textQuery) || 
+                    s.ic_number.includes(textQuery) || 
+                    s.short_class.toLowerCase().includes(textQuery) || 
+                    s.full_class.toLowerCase().includes(textQuery);
+
+                return matchesYear && matchesText;
             });
 
-            scannerWidget.render(async (decodedText) => {
-                if(STUDENTS[decodedText]) {
-                    await sendScanToSupabase(decodedText);
-                    const res = document.getElementById('mobile-scan-result');
-                    res.innerText = `✅ Berjaya: ${STUDENTS[decodedText].name} (${decodedText})`;
-                    res.classList.remove('hidden');
-                    setTimeout(() => res.classList.add('hidden'), 3000);
+            renderMembersTableOnly(filtered);
+        }
+
+        function toggleMemberSelection(icNumber, isChecked) {
+            if(isChecked) {
+                selectedMembersForPrint.add(icNumber);
+            } else {
+                selectedMembersForPrint.delete(icNumber);
+            }
+            updateSelectedCountBadge();
+        }
+
+        function toggleSelectAllMembers(selectAll) {
+            const checkboxes = document.querySelectorAll('.member-select-checkbox');
+            const masterCb = document.getElementById('master-member-checkbox');
+            if(masterCb) masterCb.checked = selectAll;
+
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll;
+                if(selectAll) {
+                    selectedMembersForPrint.add(cb.value);
+                } else {
+                    selectedMembersForPrint.delete(cb.value);
                 }
-            }, (error) => {});
+            });
+            updateSelectedCountBadge();
         }
 
-        function switchTab(tab) {
-            const contentKaunter = document.getElementById('content-kaunter');
-            const contentQR = document.getElementById('content-qr-murid');
-            const tabKaunter = document.getElementById('tab-kaunter');
-            const tabQR = document.getElementById('tab-qr-murid');
+        function updateSelectedCountBadge() {
+            const badge = document.getElementById('selected-count-badge');
+            if(badge) badge.innerText = selectedMembersForPrint.size;
+        }
 
-            if(tab === 'kaunter') {
-                contentKaunter.classList.remove('hidden');
-                contentQR.classList.add('hidden');
-                tabKaunter.className = "flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 border-indigo-600 text-indigo-600";
-                tabQR.className = "flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700";
-            } else {
-                contentKaunter.classList.add('hidden');
-                contentQR.classList.remove('hidden');
-                tabQR.className = "flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 border-indigo-600 text-indigo-600";
-                tabKaunter.className = "flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700";
+        function printSingleCard(icNumber) {
+            selectedMembersForPrint.clear();
+            selectedMembersForPrint.add(icNumber);
+            updateSelectedCountBadge();
+            generateAndPrintSelectedCards();
+        }
+
+        // JANA & CETAK KAD KEMAS SAIZ RFID DENGAN KOD QR LEBIH BESAR (110px)
+        function generateAndPrintSelectedCards() {
+            if(selectedMembersForPrint.size === 0) {
+                alert('Sila tandakan (tick) sekurang-kurangnya seorang ahli untuk dicetak.');
+                return;
             }
-        }
 
-        function renderQRCards() {
-            const container = document.getElementById('printable-cards');
+            const container = document.getElementById('printable-cards-container');
             container.innerHTML = '';
 
-            Object.values(STUDENTS).forEach(s => {
+            const selectedList = masterStudents.filter(s => selectedMembersForPrint.has(s.ic_number));
+
+            selectedList.forEach(s => {
                 const card = document.createElement('div');
-                card.className = "bg-white p-5 rounded-2xl border-2 border-slate-200 shadow-sm flex flex-col items-center text-center relative overflow-hidden";
+                card.className = "rfid-card bg-white text-slate-900 border-2 border-indigo-700 rounded-xl p-2.5 flex items-center justify-between";
                 card.innerHTML = `
-                    <div class="w-full bg-indigo-900 text-white py-1.5 px-3 rounded-lg text-xs font-bold mb-3 flex justify-between items-center">
-                        <span>PSS ZON PELANGAI</span>
-                        <span>${s.id}</span>
+                    <div class="flex flex-col justify-between h-full pr-2 text-left flex-1 min-w-0">
+                        <div>
+                            <p class="text-[9px] font-extrabold text-indigo-900 leading-tight uppercase">PSS ZON PELANGAI</p>
+                            <p class="text-[8px] font-bold text-slate-500">AHLI SAHABAT PSS</p>
+                        </div>
+                        <div class="my-1">
+                            <h4 class="font-extrabold text-slate-900 text-[11px] leading-tight break-words">${s.full_name}</h4>
+                            <p class="text-[9px] font-mono font-bold text-slate-600 mt-0.5">${s.ic_number}</p>
+                        </div>
+                        <div class="bg-indigo-900 text-white text-[9px] font-bold px-2 py-0.5 rounded text-center w-max">
+                            KELAS: ${s.short_class}
+                        </div>
                     </div>
-                    <div id="qrcode-${s.id}" class="my-2 p-2 bg-slate-50 border border-slate-200 rounded-xl"></div>
-                    <h3 class="font-bold text-slate-800 text-base mt-2">${s.name}</h3>
-                    <p class="text-xs text-slate-500">Kelas: ${s.class}</p>
+                    <div id="qrcode-${s.ic_number}" class="shrink-0 p-1 bg-white border border-slate-300 rounded-lg flex items-center justify-center"></div>
                 `;
                 container.appendChild(card);
 
                 setTimeout(() => {
-                    new QRCode(document.getElementById(`qrcode-${s.id}`), {
-                        text: s.id,
-                        width: 120,
-                        height: 120
+                    new QRCode(document.getElementById(`qrcode-${s.ic_number}`), {
+                        text: s.ic_number,
+                        width: 110,
+                        height: 110
                     });
-                }, 100);
+                }, 80);
             });
+
+            setTimeout(() => {
+                window.print();
+            }, 400);
         }
 
-        function openStudentForm(studentId) {
-            currentStudentId = studentId;
-            const student = STUDENTS[studentId];
-            if(!student) return;
+        function renderAdminDeleteTable() {
+            const tbody = document.getElementById('admin-delete-rows');
+            if(!tbody) return;
+            tbody.innerHTML = masterStudents.map(s => `
+                <tr class="hover:bg-slate-900/50">
+                    <td class="p-3 font-semibold text-white">${s.full_name}</td>
+                    <td class="p-3 text-slate-400">${s.ic_number}</td>
+                    <td class="p-3 text-indigo-400 font-bold">${s.short_class}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteStudent('${s.ic_number}')" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1 rounded-lg text-[11px] font-bold">Padam</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
 
+        async function deleteStudent(icNumber) {
+            if(confirm(`Adakah anda pasti mahu memadam rekod murid KP: ${icNumber}?`)) {
+                await supabaseClient.from('master_students').delete().eq('ic_number', icNumber);
+                loadMasterStudents();
+            }
+        }
+
+        function searchMasterStudents() {
+            const q = document.getElementById('search-student-input').value.toLowerCase();
+            const filtered = masterStudents.filter(s => 
+                s.full_name.toLowerCase().includes(q) || 
+                s.ic_number.includes(q) || 
+                s.full_class.toLowerCase().includes(q) ||
+                s.short_class.toLowerCase().includes(q)
+            );
+            renderMasterTable(filtered);
+        }
+
+        async function toggleMembership(icNumber, status) {
+            await supabaseClient.from('master_students').update({ is_member: status }).eq('ic_number', icNumber);
+            loadMasterStudents();
+        }
+
+        async function openStudentByIC(icNumber) {
+            const student = masterStudents.find(s => s.ic_number === icNumber);
+            if(!student) {
+                alert(`No KP ${icNumber} tiada dalam pangkalan data.`);
+                return;
+            }
+
+            currentStudentIC = icNumber;
             document.getElementById('student-card-empty').classList.add('hidden');
             document.getElementById('student-card-active').classList.remove('hidden');
 
-            document.getElementById('disp-id').innerText = `ID: ${student.id}`;
-            document.getElementById('disp-name').innerText = student.name;
-            document.getElementById('disp-class').innerText = `Kelas: ${student.class}`;
+            document.getElementById('disp-id').innerText = `KP: ${student.ic_number}`;
+            document.getElementById('disp-name').innerText = student.full_name;
+            document.getElementById('disp-class').innerText = `Kelas: ${student.short_class} (${student.full_class})`;
+            document.getElementById('disp-gender').innerText = `Jantina: ${student.gender}`;
 
             renderBorrowedList();
         }
 
-        async function simulateScan() {
-            const selectedId = document.getElementById('sim-select').value;
-            await sendScanToSupabase(selectedId);
+        async function simulateScanIC() {
+            const ic = document.getElementById('sim-ic-input').value.trim();
+            if(ic) {
+                await sendScanToSupabase(ic);
+                openStudentByIC(ic);
+            }
+        }
+
+        function verifyAdminPIN() {
+            const pin = document.getElementById('admin-pin-input').value;
+            if(pin === '1234') {
+                document.getElementById('admin-auth').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+            } else {
+                alert('PIN Salah!');
+            }
+        }
+
+        function handleExcelImport(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+                    if (rows.length === 0) {
+                        alert('Fail Excel kosong.');
+                        return;
+                    }
+
+                    let headerIndex = -1;
+                    for (let i = 0; i < Math.min(15, rows.length); i++) {
+                        const rowStr = rows[i].join(' ').toLowerCase();
+                        if (rowStr.includes('nama') && (rowStr.includes('kp') || rowStr.includes('ic') || rowStr.includes('sijil'))) {
+                            headerIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (headerIndex === -1) headerIndex = 0;
+
+                    const headers = rows[headerIndex].map(h => h.toString().trim());
+                    const nameCol = headers.findIndex(h => /nama/i.test(h));
+                    const icCol = headers.findIndex(h => /nokp|no. kp|kp|ic|mykid/i.test(h));
+                    const classCol = headers.findIndex(h => /nama kelas|kelas|class/i.test(h));
+
+                    if (nameCol === -1 || icCol === -1) {
+                        alert('Gagal mengesan lajur Nama atau No. KP dalam fail Excel ini.');
+                        return;
+                    }
+
+                    const records = [];
+                    for (let i = headerIndex + 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        const name = row[nameCol] ? row[nameCol].toString().trim() : '';
+                        const icRaw = row[icCol] ? row[icCol].toString().trim() : '';
+                        const namaKelasAPDM = (classCol !== -1 && row[classCol]) ? row[classCol].toString().trim() : '-';
+
+                        if (!name || !icRaw) continue;
+
+                        const ic = icRaw.replace(/[^0-9]/g, '');
+                        if (ic.length < 6) continue;
+
+                        const classInfo = calculateCurrentClassFromIC(ic, namaKelasAPDM);
+
+                        records.push({
+                            full_name: name,
+                            ic_number: ic,
+                            full_class: classInfo.fullClass,
+                            short_class: classInfo.shortClass,
+                            gender: getGenderFromIC(ic),
+                            is_member: false
+                        });
+                    }
+
+                    if (records.length > 0) {
+                        saveImportedRecords(records);
+                    } else {
+                        alert('Tiada rekod murid yang sah dijumpai.');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Ralat membaca fail Excel/CSV: ' + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function saveImportedRecords(records) {
+            const { error } = await supabaseClient.from('master_students').upsert(records, { onConflict: 'ic_number' });
+            if(!error) {
+                alert(`Berjaya mengimport ${records.length} data murid APDM!`);
+                loadMasterStudents();
+            } else {
+                alert('Ralat semasa menyimpan ke pangkalan data Supabase.');
+            }
+        }
+
+        async function handleManualStudentAdd(e) {
+            e.preventDefault();
+            const name = document.getElementById('add-name').value;
+            const ic = document.getElementById('add-ic').value.replace(/[^0-9]/g, '');
+            const namaKelasAPDM = document.getElementById('add-class').value;
+
+            const classInfo = calculateCurrentClassFromIC(ic, namaKelasAPDM);
+
+            const newStudent = {
+                full_name: name,
+                ic_number: ic,
+                full_class: classInfo.fullClass,
+                short_class: classInfo.shortClass,
+                gender: getGenderFromIC(ic),
+                is_member: false
+            };
+
+            await supabaseClient.from('master_students').upsert([newStudent], { onConflict: 'ic_number' });
+            alert('Murid berjaya ditambah!');
+            document.getElementById('add-name').value = '';
+            document.getElementById('add-ic').value = '';
+            document.getElementById('add-class').value = '';
+            loadMasterStudents();
+        }
+
+        function switchTab(tab) {
+            const tabs = ['dashboard', 'sahabat', 'kaunter', 'daftar-ahli', 'admin'];
+            tabs.forEach(t => {
+                document.getElementById(`content-${t}`).classList.add('hidden');
+                const nav = document.getElementById(`nav-${t}`);
+                if(nav) nav.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition";
+            });
+
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tab}`);
+            if(activeNav) {
+                if(tab === 'admin') {
+                    activeNav.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold";
+                } else {
+                    activeNav.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition font-bold";
+                }
+            }
         }
 
         function resetKaunter() {
-            currentStudentId = null;
+            currentStudentIC = null;
             document.getElementById('student-card-active').classList.add('hidden');
             document.getElementById('student-card-empty').classList.remove('hidden');
-            document.getElementById('sync-status').innerText = "Menunggu imbasan dari telefon bimbit...";
         }
 
         function setFormTab(tab) {
@@ -376,104 +1065,90 @@
             if(tab === 'borrow') {
                 formBorrow.classList.remove('hidden');
                 formReturn.classList.add('hidden');
-                btnBorrow.className = "flex-1 py-2 text-center font-bold text-sm border-b-2 border-indigo-600 text-indigo-600";
-                btnReturn.className = "flex-1 py-2 text-center font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700";
+                btnBorrow.className = "flex-1 py-2 text-center font-bold text-xs rounded-lg bg-indigo-600 text-white shadow-md";
+                btnReturn.className = "flex-1 py-2 text-center font-bold text-xs rounded-lg text-slate-400 hover:text-white";
             } else {
                 formBorrow.classList.add('hidden');
                 formReturn.classList.remove('hidden');
-                btnReturn.className = "flex-1 py-2 text-center font-bold text-sm border-b-2 border-indigo-600 text-indigo-600";
-                btnBorrow.className = "flex-1 py-2 text-center font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700";
+                btnReturn.className = "flex-1 py-2 text-center font-bold text-xs rounded-lg bg-indigo-600 text-white shadow-md";
+                btnBorrow.className = "flex-1 py-2 text-center font-bold text-xs rounded-lg text-slate-400 hover:text-white";
             }
         }
 
-        function handleBorrow(e) {
+        async function handleBorrow(e) {
             e.preventDefault();
             const title = document.getElementById('input-book-title').value;
             const code = document.getElementById('input-book-code').value || '-';
 
             const tx = {
-                id: Date.now(),
-                studentId: currentStudentId,
-                studentName: STUDENTS[currentStudentId].name,
-                bookTitle: title,
-                bookCode: code,
-                type: 'PINJAM',
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                ic_number: currentStudentIC,
+                book_title: title,
+                book_code: code,
+                transaction_type: 'PINJAM',
                 status: 'DIPINJAM'
             };
 
-            transactions.unshift(tx);
+            await supabaseClient.from('book_transactions').insert([tx]);
             document.getElementById('input-book-title').value = '';
             document.getElementById('input-book-code').value = '';
 
-            updateStats();
-            renderLogs();
+            alert(`Buku "${title}" berjaya direkodkan!`);
             renderBorrowedList();
-            alert(`Buku "${title}" berjaya direkodkan di bawah nama ${STUDENTS[currentStudentId].name}!`);
         }
 
-        function returnBook(txId) {
-            const tx = transactions.find(t => t.id === txId);
-            if(tx) {
-                tx.status = 'DIPULANGKAN';
-                transactions.unshift({
-                    id: Date.now(),
-                    studentId: tx.studentId,
-                    studentName: tx.studentName,
-                    bookTitle: tx.bookTitle,
-                    type: 'PULANG',
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                });
-                updateStats();
-                renderLogs();
-                renderBorrowedList();
-                alert(`Buku "${tx.bookTitle}" telah dipulangkan.`);
-            }
-        }
-
-        function renderBorrowedList() {
+        async function renderBorrowedList() {
             const list = document.getElementById('borrowed-list');
-            const activeBorrows = transactions.filter(t => t.studentId === currentStudentId && t.type === 'PINJAM' && t.status === 'DIPINJAM');
+            const { data } = await supabaseClient.from('book_transactions')
+                .select('*')
+                .eq('ic_number', currentStudentIC)
+                .eq('transaction_type', 'PINJAM')
+                .eq('status', 'DIPINJAM');
 
-            if(activeBorrows.length === 0) {
-                list.innerHTML = `<p class="text-xs text-slate-400 italic">Murid ini tiada rekod buku yang sedang dipinjam.</p>`;
+            if(!data || data.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-500 italic">Tiada rekod buku dipinjam.</p>`;
                 return;
             }
 
-            list.innerHTML = activeBorrows.map(t => `
-                <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+            list.innerHTML = data.map(t => `
+                <div class="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs">
                     <div>
-                        <p class="font-bold text-slate-700">${t.bookTitle}</p>
-                        <p class="text-slate-400">Kod: ${t.bookCode} | Masa: ${t.time}</p>
+                        <p class="font-bold text-white">${t.book_title}</p>
+                        <p class="text-slate-500">Kod: ${t.book_code}</p>
                     </div>
-                    <button onclick="returnBook(${t.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded transition">
+                    <button onclick="returnBook('${t.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">
                         Pulangkan
                     </button>
                 </div>
             `).join('');
         }
 
-        function updateStats() {
-            const borrows = transactions.filter(t => t.type === 'PINJAM').length;
-            const returns = transactions.filter(t => t.type === 'PULANG').length;
-            document.getElementById('stat-total-borrow').innerText = borrows;
-            document.getElementById('stat-total-return').innerText = returns;
+        async function returnBook(txId) {
+            await supabaseClient.from('book_transactions').update({ status: 'DIPULANGKAN' }).eq('id', txId);
+            alert('Buku berjaya dipulangkan.');
+            renderBorrowedList();
         }
 
-        function renderLogs() {
-            const container = document.getElementById('recent-logs');
-            if(transactions.length === 0) return;
+        function switchMode(mode) {
+            const viewMobile = document.getElementById('view-mobile');
+            if(mode === 'mobile') {
+                viewMobile.classList.remove('hidden');
+                initMobileScanner();
+            } else {
+                viewMobile.classList.add('hidden');
+                if(scannerWidget) scannerWidget.clear();
+            }
+        }
 
-            container.innerHTML = transactions.slice(0, 5).map(t => `
-                <div class="flex items-center justify-between p-2.5 rounded-lg border ${t.type === 'PINJAM' ? 'bg-indigo-50/50 border-indigo-100' : 'bg-emerald-50/50 border-emerald-100'}">
-                    <div>
-                        <span class="font-bold ${t.type === 'PINJAM' ? 'text-indigo-600' : 'text-emerald-600'}">[${t.type}]</span>
-                        <span class="font-semibold text-slate-700">${t.studentName}</span>
-                        <p class="text-slate-500 text-[11px]">${t.bookTitle}</p>
-                    </div>
-                    <span class="text-slate-400 text-[10px]">${t.time}</span>
-                </div>
-            `).join('');
+        function initMobileScanner() {
+            if (scannerWidget) return;
+            scannerWidget = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 220, height: 220 } });
+            scannerWidget.render(async (decodedText) => {
+                await sendScanToSupabase(decodedText);
+                const res = document.getElementById('mobile-scan-result');
+                res.innerText = `✅ Berjaya: ${decodedText}`;
+                res.classList.remove('hidden');
+                setTimeout(() => res.classList.add('hidden'), 3000);
+            }, (error) => {});
         }
     </script>
 </body>
