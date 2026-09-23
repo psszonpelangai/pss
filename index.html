@@ -67,25 +67,6 @@
         .gradient-card {
             background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
         }
-
-        #reader button {
-            background-color: #4f46e5 !important;
-            color: white !important;
-            border-radius: 10px !important;
-            padding: 6px 14px !important;
-            font-size: 12px !important;
-            font-weight: bold !important;
-            border: none !important;
-            margin: 6px 0 !important;
-        }
-        #reader select {
-            background-color: #0f172a !important;
-            color: white !important;
-            border: 1px solid #334155 !important;
-            border-radius: 8px !important;
-            padding: 6px !important;
-            font-size: 12px !important;
-        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex font-sans antialiased">
@@ -326,10 +307,9 @@
                 </div>
             </section>
 
-            <!-- TAB 3: MOD PENGAWAS - KAUNTER PINJAMAN & PEMULANGAN BUKU (Sedia Terbuka Secara Default) -->
+            <!-- TAB 3: MOD PENGAWAS - KAUNTER PINJAMAN & PEMULANGAN BUKU -->
             <section id="content-kaunter" class="hidden space-y-6">
 
-                <!-- Kaunter Terbuka Secara Automatik Tanpa Password -->
                 <div id="kaunter-active-view" class="space-y-6">
                     <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
                         <div class="flex items-center gap-3">
@@ -515,33 +495,17 @@
         </main>
     </div>
 
-    <!-- MOBILE SCANNER VIEW MODAL (KESELAMATAN PIN/PASSWORD KETIKA INGIN IMBAS) -->
+    <!-- MOBILE SCANNER VIEW MODAL -->
     <div id="view-mobile" class="hidden fixed inset-0 bg-slate-950 z-50 p-6 space-y-6 flex flex-col justify-center max-w-md mx-auto">
         <div class="flex justify-between items-center text-white">
             <h2 class="text-lg font-bold">Pengimbas QR Mobile</h2>
             <button onclick="switchMode('pc')" class="text-xs bg-slate-800 px-3.5 py-2 rounded-xl font-bold">Tutup</button>
         </div>
 
-        <!-- SKRIN KUNCI DI HANDPHONE TERLEBIH DAHULU -->
-        <div id="mobile-auth-lock" class="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center space-y-4">
-            <div class="w-12 h-12 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl flex items-center justify-center mx-auto">
-                <i data-lucide="lock" class="w-6 h-6"></i>
-            </div>
-            <h3 class="text-sm font-bold text-white">Kunci Pengimbas Pengawas</h3>
-            <p class="text-xs text-slate-400">Masukkan PIN tugas untuk mengaktifkan kamera pengimbas.</p>
-            <input type="password" id="mobile-pin-input" placeholder="PIN: 1234 atau pss2026" class="w-full bg-slate-950 border border-slate-800 text-center px-4 py-2 rounded-xl text-xs text-white font-bold tracking-widest">
-            <button onclick="unlockMobileScanner()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl text-xs transition">
-                Aktifkan Kamera Imbas
-            </button>
-        </div>
+        <div id="reader" class="overflow-hidden rounded-2xl border border-slate-800 bg-black min-h-[260px] flex items-center justify-center"></div>
 
-        <!-- SKRIN KAMERA TERBUKA SELEPAS MEMASUKKAN KATA LALUAN -->
-        <div id="mobile-scanner-unlocked" class="hidden space-y-4">
-            <div id="reader" class="overflow-hidden rounded-2xl border border-slate-800 bg-black min-h-[260px]"></div>
-
-            <div id="mobile-scan-result" class="hidden bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 rounded-xl text-xs font-semibold text-center">
-                ✅ Imbasan Berjaya Dihantar Ke PC!
-            </div>
+        <div id="mobile-scan-result" class="hidden bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 rounded-xl text-xs font-semibold text-center">
+            ✅ Imbasan Berjaya Dihantar Ke PC!
         </div>
     </div>
 
@@ -554,10 +518,9 @@
         const channel = supabaseClient.channel('pss_scan_channel');
 
         let currentStudentIC = null;
-        let html5QrcodeScannerWidget = null;
+        let html5QrCodeDirectInstance = null;
         let isScanningActive = false;
         let masterStudents = [];
-        let isMobileScannerUnlocked = false;
         let selectedMembersForPrint = new Set();
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -573,18 +536,6 @@
                 const now = new Date();
                 document.getElementById('live-clock').innerText = now.toLocaleDateString('ms-MY', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) + ' - ' + now.toLocaleTimeString('ms-MY');
             }, 1000);
-        }
-
-        function unlockMobileScanner() {
-            const pwd = document.getElementById('mobile-pin-input').value;
-            if(pwd === '1234' || pwd === 'pss2026') {
-                isMobileScannerUnlocked = true;
-                document.getElementById('mobile-auth-lock').classList.add('hidden');
-                document.getElementById('mobile-scanner-unlocked').classList.remove('hidden');
-                startMobileScannerWidget();
-            } else {
-                alert('PIN Pengawas Salah! Sila cuba lagi.');
-            }
         }
 
         function initCharts() {
@@ -619,14 +570,12 @@
             });
         }
 
-        // FUNGSI SUPABASE REALTIME: 100% AUTOMATIK MELOMPAT PADA PC
+        // FUNGSI SUPABASE REALTIME: AUTOMATIK LOMPAT SERTA-MERTA PADA PC
         function initSupabaseRealtime() {
             channel.on('broadcast', { event: 'qr_scanned' }, (payload) => {
                 const icNumber = payload.payload.icNumber;
                 if (icNumber) {
-                    // Serta-merta tukar tab PC ke Kaunter Pinjaman
                     switchTab('kaunter');
-                    // Serta-merta buka rekod & borang murid
                     openStudentByIC(icNumber);
                     document.getElementById('sync-status').innerText = `Imbasan Diterima: ${icNumber}`;
                 }
@@ -1136,55 +1085,58 @@
             renderBorrowedList();
         }
 
+        // MOD KAMERA NATIVE LANTAS KURANG 1 SAAT (DIRECT FACING MODE)
         function switchMode(mode) {
             const viewMobile = document.getElementById('view-mobile');
             if(mode === 'mobile') {
                 viewMobile.classList.remove('hidden');
-                if (!isMobileScannerUnlocked) {
-                    document.getElementById('mobile-auth-lock').classList.remove('hidden');
-                    document.getElementById('mobile-scanner-unlocked').classList.add('hidden');
-                } else {
-                    startMobileScannerWidget();
-                }
+                startFastNativeCamera();
             } else {
                 viewMobile.classList.add('hidden');
-                stopMobileScannerWidget();
+                stopFastNativeCamera();
             }
         }
 
-        function startMobileScannerWidget() {
-            if (html5QrcodeScannerWidget) return;
+        function startFastNativeCamera() {
+            if (html5QrCodeDirectInstance) return;
 
-            html5QrcodeScannerWidget = new Html5QrcodeScanner("reader", { 
-                fps: 10, 
-                qrbox: { width: 220, height: 220 },
-                rememberLastUsedCamera: true
+            html5QrCodeDirectInstance = new Html5Qrcode("reader");
+            const config = { fps: 15, qrbox: { width: 220, height: 220 } };
+
+            html5QrCodeDirectInstance.start(
+                { facingMode: "environment" }, 
+                config, 
+                async (decodedText) => {
+                    if (isScanningActive) return;
+                    isScanningActive = true;
+
+                    await sendScanToSupabase(decodedText);
+
+                    const res = document.getElementById('mobile-scan-result');
+                    res.innerText = `✅ Imbasan Berjaya Dihantar Ke PC! (${decodedText})`;
+                    res.classList.remove('hidden');
+
+                    setTimeout(() => {
+                        res.classList.add('hidden');
+                        isScanningActive = false;
+                    }, 1800);
+                },
+                (errorMessage) => {}
+            ).catch(err => {
+                console.error("Ralat Kamera:", err);
             });
-
-            html5QrcodeScannerWidget.render(async (decodedText) => {
-                if (isScanningActive) return;
-                isScanningActive = true;
-
-                await sendScanToSupabase(decodedText);
-
-                const res = document.getElementById('mobile-scan-result');
-                res.innerText = `✅ Imbasan Berjaya Dihantar Ke PC! (${decodedText})`;
-                res.classList.remove('hidden');
-
-                setTimeout(() => {
-                    res.classList.add('hidden');
-                    isScanningActive = false;
-                }, 2000);
-            }, (error) => {});
         }
 
-        function stopMobileScannerWidget() {
-            if (html5QrcodeScannerWidget) {
-                try {
-                    html5QrcodeScannerWidget.clear();
-                } catch(e) {}
-                html5QrcodeScannerWidget = null;
-                isScanningActive = false;
+        function stopFastNativeCamera() {
+            if (html5QrCodeDirectInstance) {
+                html5QrCodeDirectInstance.stop().then(() => {
+                    html5QrCodeDirectInstance.clear();
+                    html5QrCodeDirectInstance = null;
+                    isScanningActive = false;
+                }).catch(err => {
+                    html5QrCodeDirectInstance = null;
+                    isScanningActive = false;
+                });
             }
         }
     </script>
