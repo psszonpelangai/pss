@@ -35,7 +35,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-wide">PSS DIGITAL ZON PELANGAI</h1>
-                    <p class="text-xs text-indigo-200">Sistem Imbasan & Sirkulasi Masa-Nyata (Supabase Realtime)</p>
+                    <p class="text-xs text-indigo-200">Sistem Imbasan Masa-Nyata (Supabase Realtime)</p>
                 </div>
             </div>
 
@@ -71,7 +71,6 @@
 
             <!-- TAB 1: KAUNTER SIRKULASI -->
             <div id="content-kaunter" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <!-- Status & Scanner Trigger Box -->
                 <div class="lg:col-span-12 bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
                         <span class="relative flex h-3 w-3">
@@ -79,12 +78,11 @@
                           <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
                         <div>
-                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status Supabase Sync</p>
-                            <p id="sync-status" class="text-sm font-bold text-slate-700">Terhubung & Menunggu imbasan dari telefon bimbit...</p>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status Sync PC</p>
+                            <p id="sync-status" class="text-sm font-bold text-slate-700">Terhubung & Menunggu imbasan dari telefon...</p>
                         </div>
                     </div>
 
-                    <!-- Quick Simulator dropdown -->
                     <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200">
                         <span class="text-xs text-slate-500 font-medium">Uji Simulasi PC:</span>
                         <select id="sim-select" class="text-xs p-1.5 border border-slate-300 rounded bg-white font-medium">
@@ -98,14 +96,14 @@
                     </div>
                 </div>
 
-                <!-- Left Column: Student Details & Actions -->
+                <!-- Left Column: Student Details -->
                 <div class="lg:col-span-7 space-y-6">
                     <div id="student-card-empty" class="bg-white p-12 rounded-2xl shadow-sm border border-slate-200 text-center flex flex-col items-center justify-center min-h-[380px]">
                         <div class="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-4">
                             <i data-lucide="qr-code" class="w-8 h-8"></i>
                         </div>
                         <h3 class="text-lg font-bold text-slate-700">Sedia Untuk Imbasan Murid</h3>
-                        <p class="text-sm text-slate-500 max-w-md mt-1">Sila imbas Kad QR Murid menggunakan **Telefon Bimbit** atau pilih simulasi di atas. Borang sirkulasi akan terpapar secara automatik di sini.</p>
+                        <p class="text-sm text-slate-500 max-w-md mt-1">Imbas Kad QR Murid dari telefon bimbit. Borang akan automatik terbuka di sini.</p>
                     </div>
 
                     <div id="student-card-active" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -120,25 +118,19 @@
                             </button>
                         </div>
 
-                        <!-- Action Forms -->
                         <div class="p-6">
                             <div class="flex border-b border-slate-200 mb-6">
-                                <button id="btn-tab-borrow" onclick="setFormTab('borrow')" class="flex-1 py-2 text-center font-bold text-sm border-b-2 border-indigo-600 text-indigo-600">
-                                    Pinjam Buku
-                                </button>
-                                <button id="btn-tab-return" onclick="setFormTab('return')" class="flex-1 py-2 text-center font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700">
-                                    Pulangkan Buku
-                                </button>
+                                <button id="btn-tab-borrow" onclick="setFormTab('borrow')" class="flex-1 py-2 text-center font-bold text-sm border-b-2 border-indigo-600 text-indigo-600">Pinjam Buku</button>
+                                <button id="btn-tab-return" onclick="setFormTab('return')" class="flex-1 py-2 text-center font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700">Pulangkan Buku</button>
                             </div>
 
-                            <!-- Form Borrow -->
                             <form id="form-borrow" onsubmit="handleBorrow(event)" class="space-y-4">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 mb-1">Judul Buku / Tajuk</label>
-                                    <input type="text" id="input-book-title" required placeholder="Cth: Sang Kancil & Buaya / Bahasa Melayu T5" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                    <input type="text" id="input-book-title" required placeholder="Cth: Sang Kancil & Buaya" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-1">No. Perolehan / Kod Buku (Opsional)</label>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Kod Buku (Opsional)</label>
                                     <input type="text" id="input-book-code" placeholder="Cth: B-2024-089" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                                 </div>
                                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2">
@@ -146,16 +138,15 @@
                                 </button>
                             </form>
 
-                            <!-- Form Return -->
                             <div id="form-return" class="hidden space-y-4">
-                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Senarai Buku Sedang Dipinjam</h4>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Buku Sedang Dipinjam</h4>
                                 <div id="borrowed-list" class="space-y-2"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column: Stats & Recent Log -->
+                <!-- Right Column: Stats -->
                 <div class="lg:col-span-5 space-y-6">
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -170,7 +161,7 @@
 
                     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                         <h3 class="font-bold text-slate-700 text-sm mb-4 flex items-center gap-2">
-                            <i data-lucide="history" class="w-4 h-4 text-slate-400"></i> Log Transaksi Terkini
+                            <i data-lucide="history" class="w-4 h-4 text-slate-400"></i> Log Terkini
                         </h3>
                         <div id="recent-logs" class="space-y-3 text-xs">
                             <p class="text-slate-400 italic text-center py-4">Belum ada sebarang transaksi hari ini.</p>
@@ -184,7 +175,7 @@
                 <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Senarai & Cetakan Kad QR Murid</h2>
-                        <p class="text-xs text-slate-500">Gunakan Kad QR ini untuk diimbas menggunakan telefon bimbit pengawas/guru.</p>
+                        <p class="text-xs text-slate-500">Gunakan Kad QR ini untuk diimbas menggunakan telefon bimbit.</p>
                     </div>
                     <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2">
                         <i data-lucide="printer" class="w-4 h-4"></i> Cetak Kad QR Murid
@@ -203,26 +194,19 @@
                     <i data-lucide="camera" class="w-8 h-8"></i>
                 </div>
                 <h2 class="text-xl font-bold text-slate-800">Pengimbas Kad QR Murid</h2>
-                <p class="text-xs text-slate-500">Halakan kamera telefon anda ke Kad QR ID Murid. Rekod akan dihantar ke PC Kaunter secara masa-nyata.</p>
+                <p class="text-xs text-slate-500">Tekan butang pengimbas di bawah. Izinkan akses kamera apabila diminta oleh pelayar web.</p>
 
-                <div id="reader-container" class="overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50">
-                    <div id="reader" class="w-full"></div>
-                </div>
+                <div id="reader" class="overflow-hidden rounded-xl border border-slate-300"></div>
 
                 <div id="mobile-scan-result" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-xs font-semibold">
-                    ✅ Berjaya dihantar ke skrin PC!
+                    ✅ Berjaya dihantar ke PC!
                 </div>
-
-                <button id="btn-start-scanner" onclick="startScanner()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-md">
-                    <i data-lucide="power" class="w-4 h-4"></i> Buka Kamera Imbas
-                </button>
             </div>
         </div>
 
     </main>
 
     <script>
-        // SUPABASE CONFIGURATION
         const SUPABASE_URL = "https://dvphbyrurvxnvofjkhjz.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2cGhieXJ1cnZ4bnZvZmpraGp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNDc4ODAsImV4cCI6MjEwNTcyMzg4MH0.aOS1oJPowsunCtvF7hFRZeQdrrwfH8a9bDC7zrQiONI";
 
@@ -236,7 +220,7 @@
         };
 
         let currentStudentId = null;
-        let html5QrcodeScanner = null;
+        let scannerWidget = null;
         let transactions = [];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -245,7 +229,6 @@
             initSupabaseRealtime();
         });
 
-        // Initialize Supabase Broadcast Channel (Sub-second sync without DB table requirements)
         function initSupabaseRealtime() {
             channel.on('broadcast', { event: 'qr_scanned' }, (payload) => {
                 const studentId = payload.payload.studentId;
@@ -260,7 +243,6 @@
             });
         }
 
-        // Send scanned student ID via Supabase Broadcast
         async function sendScanToSupabase(studentId) {
             await channel.send({
                 type: 'broadcast',
@@ -278,15 +260,37 @@
             if(mode === 'pc') {
                 viewPC.classList.remove('hidden');
                 viewMobile.classList.add('hidden');
-                btnPC.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-900 shadow-md";
-                btnMobile.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold text-indigo-200 hover:text-white transition-all";
-                if(html5QrcodeScanner) html5QrcodeScanner.stop();
+                btnPC.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-slate-900 shadow-md";
+                btnMobile.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold text-indigo-200 hover:text-white";
+                if(scannerWidget) scannerWidget.clear();
             } else {
                 viewPC.classList.add('hidden');
                 viewMobile.classList.remove('hidden');
-                btnMobile.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-900 shadow-md";
-                btnPC.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold text-indigo-200 hover:text-white transition-all";
+                btnMobile.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-slate-900 shadow-md";
+                btnPC.className = "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold text-indigo-200 hover:text-white";
+                initMobileScanner();
             }
+        }
+
+        function initMobileScanner() {
+            if (scannerWidget) return;
+
+            scannerWidget = new Html5QrcodeScanner("reader", {
+                fps: 10,
+                qrbox: { width: 220, height: 220 },
+                rememberLastUsedCamera: true,
+                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+            });
+
+            scannerWidget.render(async (decodedText) => {
+                if(STUDENTS[decodedText]) {
+                    await sendScanToSupabase(decodedText);
+                    const res = document.getElementById('mobile-scan-result');
+                    res.innerText = `✅ Berjaya: ${STUDENTS[decodedText].name} (${decodedText})`;
+                    res.classList.remove('hidden');
+                    setTimeout(() => res.classList.add('hidden'), 3000);
+                }
+            }, (error) => {});
         }
 
         function switchTab(tab) {
@@ -470,24 +474,6 @@
                     <span class="text-slate-400 text-[10px]">${t.time}</span>
                 </div>
             `).join('');
-        }
-
-        function startScanner() {
-            html5QrcodeScanner = new Html5Qrcode("reader");
-            html5QrcodeScanner.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                async (decodedText) => {
-                    if(STUDENTS[decodedText]) {
-                        await sendScanToSupabase(decodedText);
-                        const res = document.getElementById('mobile-scan-result');
-                        res.innerText = `✅ Berjaya: ${STUDENTS[decodedText].name} (${decodedText})`;
-                        res.classList.remove('hidden');
-                        setTimeout(() => res.classList.add('hidden'), 3000);
-                    }
-                },
-                (errorMessage) => {}
-            );
         }
     </script>
 </body>
