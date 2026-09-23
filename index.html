@@ -531,7 +531,7 @@
         </div>
     </div>
 
-    <!-- Application Script -->
+   <!-- Application Script -->
     <script>
         const SUPABASE_URL = "https://dvphbyrurvxnvofjkhjz.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2cGhieXJ1cnZ4bnZvZmpraGp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNDc4ODAsImV4cCI6MjEwNTcyMzg4MH0.aOS1oJPowsunCtvF7hFRZeQdrrwfH8a9bDC7zrQiONI";
@@ -613,10 +613,14 @@
             });
         }
 
+        // FUNGSI SUPABASE REALTIME (DENGAN AUTO-SWITCH TAB KE KAUNTER)
         function initSupabaseRealtime() {
             channel.on('broadcast', { event: 'qr_scanned' }, (payload) => {
                 const icNumber = payload.payload.icNumber;
                 if(icNumber && isKaunterUnlocked) {
+                    // Automatik lompat ke tab kaunter
+                    switchTab('kaunter');
+                    // Buka rekod murid
                     openStudentByIC(icNumber);
                     document.getElementById('sync-status').innerText = `Imbasan Diterima: ${icNumber}`;
                 }
@@ -739,7 +743,6 @@
             updateSelectedCountBadge();
         }
 
-        // Tapisan Teks + Dropdown Angka Tahun (1 hingga 6)
         function filterMembers() {
             const textQuery = document.getElementById('search-member-input').value.toLowerCase();
             const yearQuery = document.getElementById('filter-class-dropdown').value; 
@@ -798,7 +801,6 @@
             generateAndPrintSelectedCards();
         }
 
-        // JANA & CETAK KAD KEMAS SAIZ RFID DENGAN KOD QR LEBIH BESAR (110px)
         function generateAndPrintSelectedCards() {
             if(selectedMembersForPrint.size === 0) {
                 alert('Sila tandakan (tick) sekurang-kurangnya seorang ahli untuk dicetak.');
