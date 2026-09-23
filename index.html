@@ -67,6 +67,26 @@
         .gradient-card {
             background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
         }
+
+        /* PENYESUAIAN WIDGET KAMERA HTML5 QRCODE */
+        #reader button {
+            background-color: #4f46e5 !important;
+            color: white !important;
+            border-radius: 10px !important;
+            padding: 6px 14px !important;
+            font-size: 12px !important;
+            font-weight: bold !important;
+            border: none !important;
+            margin: 6px 0 !important;
+        }
+        #reader select {
+            background-color: #0f172a !important;
+            color: white !important;
+            border: 1px solid #334155 !important;
+            border-radius: 8px !important;
+            padding: 6px !important;
+            font-size: 12px !important;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex font-sans antialiased">
@@ -525,8 +545,8 @@
             <button onclick="switchMode('pc')" class="text-xs bg-slate-800 px-3.5 py-2 rounded-xl font-bold">Tutup</button>
         </div>
         
-        <!-- ELEMENT KAMERA HP (STABIL & MESRA MOBILE) -->
-        <div id="reader" class="overflow-hidden rounded-2xl border border-slate-800 bg-black min-h-[250px] flex items-center justify-center"></div>
+        <!-- ELEMENT KAMERA HP (STABIL BERSIH) -->
+        <div id="reader" class="overflow-hidden rounded-2xl border border-slate-800 bg-black min-h-[280px]"></div>
 
         <div id="mobile-scan-result" class="hidden bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 rounded-xl text-xs font-semibold text-center">
             ✅ Imbasan Berjaya Dihantar!
@@ -542,7 +562,7 @@
         const channel = supabaseClient.channel('pss_scan_channel');
 
         let currentStudentIC = null;
-        let html5QrCodeScannerInstance = null; // Scanner instance
+        let html5QrcodeScannerWidget = null;
         let isScanningActive = false;
         let masterStudents = [];
         let isKaunterUnlocked = false;
@@ -801,7 +821,6 @@
             generateAndPrintSelectedCards();
         }
 
-        // JANA & CETAK KAD KEMAS SAIZ RFID DENGAN KOD QR LEBIH BESAR (110px)
         function generateAndPrintSelectedCards() {
             if(selectedMembersForPrint.size === 0) {
                 alert('Sila tandakan (tick) sekurang-kurangnya seorang ahli untuk dicetak.');
@@ -1131,61 +1150,51 @@
             renderBorrowedList();
         }
 
-        // PENGIMBAS MOBILE STABIL DENGAN Html5Qrcode API (TANPA RALAT removeChild)
+        // PENGIMBAS MOBILE STABIL MESRA PERANTI
         function switchMode(mode) {
             const viewMobile = document.getElementById('view-mobile');
             if(mode === 'mobile') {
                 viewMobile.classList.remove('hidden');
-                startMobileScanner();
+                startMobileScannerWidget();
             } else {
                 viewMobile.classList.add('hidden');
-                stopMobileScanner();
+                stopMobileScannerWidget();
             }
         }
 
-        function startMobileScanner() {
-            if (isScanningActive) return;
+        function startMobileScannerWidget() {
+            if (html5QrcodeScannerWidget) return;
 
-            html5QrCodeScannerInstance = new Html5Qrcode("reader");
-            const config = { fps: 10, qrbox: { width: 220, height: 220 } };
-
-            html5QrCodeScannerInstance.start(
-                { facingMode: "environment" }, 
-                config, 
-                async (decodedText) => {
-                    if (isScanningActive) return;
-                    isScanningActive = true;
-
-                    await sendScanToSupabase(decodedText);
-
-                    const res = document.getElementById('mobile-scan-result');
-                    res.innerText = `✅ Imbasan Berjaya Dihantar: ${decodedText}`;
-                    res.classList.remove('hidden');
-
-                    setTimeout(() => {
-                        res.classList.add('hidden');
-                        isScanningActive = false;
-                    }, 2000);
-                },
-                (errorMessage) => {
-                    // Abaikan ralat kecil imbasan pembacaan bingkai
-                }
-            ).catch(err => {
-                console.error("Gagal membuka kamera:", err);
+            html5QrcodeScannerWidget = new Html5QrcodeScanner("reader", { 
+                fps: 10, 
+                qrbox: { width: 220, height: 220 },
+                rememberLastUsedCamera: true
             });
+
+            html5QrcodeScannerWidget.render(async (decodedText) => {
+                if (isScanningActive) return;
+                isScanningActive = true;
+
+                await sendScanToSupabase(decodedText);
+
+                const res = document.getElementById('mobile-scan-result');
+                res.innerText = `✅ Imbasan Berjaya Dihantar: ${decodedText}`;
+                res.classList.remove('hidden');
+
+                setTimeout(() => {
+                    res.classList.add('hidden');
+                    isScanningActive = false;
+                }, 2000);
+            }, (error) => {});
         }
 
-        function stopMobileScanner() {
-            if (html5QrCodeScannerInstance) {
-                html5QrCodeScannerInstance.stop().then(() => {
-                    html5QrCodeScannerInstance.clear();
-                    html5QrCodeScannerInstance = null;
-                    isScanningActive = false;
-                }).catch(err => {
-                    console.error("Ralat menghentikan kamera:", err);
-                    html5QrCodeScannerInstance = null;
-                    isScanningActive = false;
-                });
+        function stopMobileScannerWidget() {
+            if (html5QrcodeScannerWidget) {
+                try {
+                    html5QrcodeScannerWidget.clear();
+                } catch(e) {}
+                html5QrcodeScannerWidget = null;
+                isScanningActive = false;
             }
         }
     </script>
