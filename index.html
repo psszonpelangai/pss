@@ -327,69 +327,135 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                        <div class="lg:col-span-7">
-                            <div id="student-card-empty" class="bg-slate-950 border border-slate-800/80 rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[420px]">
-                                <div class="w-20 h-20 bg-indigo-500/10 text-indigo-400 rounded-3xl border border-indigo-500/20 flex items-center justify-center mb-4 shadow-xl">
-                                    <i data-lucide="scan-line" class="w-10 h-10"></i>
-                                </div>
-                                <h3 class="text-lg font-bold text-white">Sedia Untuk Imbasan Ahli</h3>
-                                <p class="text-xs text-slate-400 max-w-sm mt-1 leading-relaxed">Imbas Kad QR Murid dari telefon bimbit. Borang pinjaman atau pemulangan akan terbuka secara automatik.</p>
+                    <div class="grid grid-cols-1 gap-6">
+                        <!-- Paparan Kosong Sedia Imbas -->
+                        <div id="student-card-empty" class="bg-slate-950 border border-slate-800/80 rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[420px]">
+                            <div class="w-20 h-20 bg-indigo-500/10 text-indigo-400 rounded-3xl border border-indigo-500/20 flex items-center justify-center mb-4 shadow-xl">
+                                <i data-lucide="scan-line" class="w-10 h-10"></i>
                             </div>
-
-                            <div id="student-card-active" class="hidden bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-                                <div class="gradient-card p-6 text-white flex justify-between items-start">
-                                    <div class="space-y-1">
-                                        <span class="bg-white/20 backdrop-blur-md text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider" id="disp-id">KP: -</span>
-                                        <h2 class="text-2xl font-extrabold mt-2" id="disp-name">-</h2>
-                                        <div class="flex items-center gap-3 text-xs text-indigo-100 pt-1">
-                                            <span id="disp-class" class="font-semibold">Kelas: -</span> • 
-                                            <span id="disp-gender">Jantina: -</span>
-                                        </div>
-                                    </div>
-                                    <button onclick="resetKaunter()" class="bg-white/10 hover:bg-white/20 text-white text-xs px-3.5 py-2 rounded-xl backdrop-blur-md transition font-semibold flex items-center gap-1.5">
-                                        <i data-lucide="x" class="w-4 h-4"></i> Selesai
-                                    </button>
-                                </div>
-
-                                <div class="p-6 space-y-6">
-                                    <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
-                                        <button id="btn-tab-borrow" onclick="setFormTab('borrow')" class="flex-1 py-2 text-center font-bold text-xs rounded-lg bg-indigo-600 text-white shadow-md">Pinjam Buku</button>
-                                        <button id="btn-tab-return" onclick="setFormTab('return')" class="flex-1 py-2 text-center font-bold text-xs rounded-lg text-slate-400 hover:text-white">Pulangkan Buku</button>
-                                    </div>
-
-                                    <form id="form-borrow" onsubmit="handleBorrow(event)" class="space-y-4">
-                                        <div>
-                                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Judul Buku / Tajuk</label>
-                                            <input type="text" id="input-book-title" required placeholder="Masukkan judul buku..." class="w-full bg-slate-900 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Kod Perolehan Buku (Opsional)</label>
-                                            <input type="text" id="input-book-code" placeholder="Cth: B-2024-001" class="w-full bg-slate-900 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
-                                        </div>
-                                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2">
-                                            <i data-lucide="plus-circle" class="w-4 h-4"></i> Rekod Pinjaman Buku
-                                        </button>
-                                    </form>
-
-                                    <div id="form-return" class="hidden space-y-3">
-                                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Senarai Buku Sedang Dipinjam</h4>
-                                        <div id="borrowed-list" class="space-y-2"></div>
-                                    </div>
-                                </div>
-                            </div>
+                            <h3 class="text-lg font-bold text-white">Sedia Untuk Imbasan Ahli</h3>
+                            <p class="text-xs text-slate-400 max-w-sm mt-1 leading-relaxed">Imbas Kad QR Murid dari telefon bimbit. Borang pinjaman atau pemulangan akan terbuka secara automatik.</p>
                         </div>
 
-                        <div class="lg:col-span-5 space-y-6">
-                            <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl space-y-4">
-                                <h3 class="text-xs font-bold text-white flex items-center justify-between">
-                                    <span class="flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-indigo-400"></i> Log Transaksi Terkini</span>
-                                    <span class="text-[10px] text-slate-500">Masa-Nyata</span>
-                                </h3>
-                                <div id="recent-logs" class="space-y-2 text-xs">
-                                    <p class="text-slate-500 italic text-center py-6">Belum ada sebarang transaksi hari ini.</p>
+                        <!-- PAPARAN PROFIL & BORANG LENGKAP MENGIKUT FORMAT BAORANG.PNG -->
+                        <div id="student-card-active" class="hidden space-y-6">
+                            
+                            <!-- 1. KAD PROFIL MURID KEMAS (KAD PUTIH BERFOTO) -->
+                            <div class="bg-white text-slate-900 rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 flex flex-col md:flex-row items-center justify-center gap-8 relative overflow-hidden">
+                                <button onclick="resetKaunter()" class="absolute top-4 right-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1">
+                                    <i data-lucide="x" class="w-4 h-4"></i> Selesai
+                                </button>
+
+                                <!-- Foto Murid / Avatar -->
+                                <div class="w-28 h-36 bg-slate-100 border-4 border-indigo-600 rounded-2xl flex flex-col items-center justify-center overflow-hidden shrink-0 shadow-md">
+                                    <i data-lucide="user" class="w-16 h-16 text-indigo-400"></i>
+                                </div>
+
+                                <!-- Maklumat Murid Berformat Kemas -->
+                                <div class="space-y-2 text-sm font-semibold text-slate-800 w-full md:w-auto">
+                                    <div class="grid grid-cols-12 gap-2">
+                                        <span class="col-span-4 text-slate-500">Nama Murid</span>
+                                        <span class="col-span-1 text-center">:</span>
+                                        <span class="col-span-7 font-extrabold text-slate-900 text-base" id="disp-name">-</span>
+                                    </div>
+                                    <div class="grid grid-cols-12 gap-2">
+                                        <span class="col-span-4 text-slate-500">Kelas</span>
+                                        <span class="col-span-1 text-center">:</span>
+                                        <span class="col-span-7 font-extrabold text-indigo-700" id="disp-class">-</span>
+                                    </div>
+                                    <div class="grid grid-cols-12 gap-2">
+                                        <span class="col-span-4 text-slate-500">No. IC</span>
+                                        <span class="col-span-1 text-center">:</span>
+                                        <span class="col-span-7 font-mono font-bold" id="disp-id">-</span>
+                                    </div>
+                                    <div class="grid grid-cols-12 gap-2">
+                                        <span class="col-span-4 text-slate-500">Jantina</span>
+                                        <span class="col-span-1 text-center">:</span>
+                                        <span class="col-span-7 font-bold" id="disp-gender">-</span>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- 2. BUTANG NAVIGATION MOD PINJAMAN / PEMULANGAN -->
+                            <div class="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+                                <button id="btn-tab-borrow" onclick="setFormTab('borrow')" class="flex-1 py-3 text-center font-extrabold text-xs rounded-xl bg-indigo-600 text-white shadow-lg flex items-center justify-center gap-2 transition">
+                                    <i data-lucide="book-open" class="w-4 h-4"></i> Pinjaman Buku Baharu
+                                </button>
+                                <button id="btn-tab-return" onclick="setFormTab('return')" class="flex-1 py-3 text-center font-extrabold text-xs rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-2 transition">
+                                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Pemulangan Buku
+                                </button>
+                            </div>
+
+                            <!-- 3. BORANG REKOD PINJAMAN BAHARU -->
+                            <div id="form-borrow" class="bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
+                                <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Borang Rekod Pinjaman Buku
+                                </h3>
+                                <form onsubmit="handleBorrow(event)" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                                    <div class="md:col-span-7">
+                                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Tajuk Buku / Judul</label>
+                                        <input type="text" id="input-book-title" required placeholder="Masukkan tajuk buku..." class="w-full bg-slate-900 border border-slate-800 px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
+                                    </div>
+                                    <div class="md:col-span-5">
+                                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Kod Perolehan (Opsional)</label>
+                                        <input type="text" id="input-book-code" placeholder="Cth: B-2026-001" class="w-full bg-slate-900 border border-slate-800 px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
+                                    </div>
+                                    <button type="submit" class="md:col-span-12 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2">
+                                        <i data-lucide="plus" class="w-4 h-4"></i> Rekodkan Pinjaman Ini
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- 4. JADUAL SENARAI BUKU SEDANG DIPINJAM (MENGIKUT FORMAT BAORANG.PNG) -->
+                            <div class="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+                                <div class="bg-indigo-600 text-white px-6 py-3.5 font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
+                                    <i data-lucide="book-open" class="w-4 h-4"></i> Senarai Buku Sedang Dipinjam
+                                </div>
+                                <div class="p-6 overflow-x-auto">
+                                    <table class="w-full text-left text-xs">
+                                        <thead>
+                                            <tr class="border-b border-slate-800 text-slate-400 font-bold">
+                                                <th class="p-3 w-12 text-center">Bil.</th>
+                                                <th class="p-3">Tajuk Buku</th>
+                                                <th class="p-3">Tarikh Pinjam</th>
+                                                <th class="p-3">Tarikh Perlu Pulang (+14 Hari)</th>
+                                                <th class="p-3 text-right">Status / Tindakan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="borrowed-list-rows" class="divide-y divide-slate-800/60">
+                                            <tr>
+                                                <td colspan="5" class="text-center py-6 text-slate-500 italic">Tiada rekod pinjaman aktif.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 5. JADUAL SEJARAH PINJAMAN TERDAHULU (MENGIKUT FORMAT BAORANG.PNG) -->
+                            <div class="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+                                <div class="bg-slate-800 text-slate-200 px-6 py-3.5 font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
+                                    <i data-lucide="history" class="w-4 h-4 text-indigo-400"></i> Sejarah Pinjaman Terdahulu
+                                </div>
+                                <div class="p-6 overflow-x-auto">
+                                    <table class="w-full text-left text-xs">
+                                        <thead>
+                                            <tr class="border-b border-slate-800 text-slate-400 font-bold">
+                                                <th class="p-3 w-12 text-center">Bil.</th>
+                                                <th class="p-3">Tajuk Buku</th>
+                                                <th class="p-3">Tarikh Pinjam</th>
+                                                <th class="p-3">Tarikh Dipulangkan</th>
+                                                <th class="p-3 text-right">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="history-list-rows" class="divide-y divide-slate-800/60">
+                                            <tr>
+                                                <td colspan="5" class="text-center py-6 text-slate-500 italic">Tiada sejarah pinjaman terdahulu.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -840,6 +906,7 @@
             loadMasterStudents();
         }
 
+        // FUNGSI MEMBUKA REKOD MURID BERFORMAT KEMAS MENGIKUT FORMAT BAORANG.PNG
         async function openStudentByIC(icNumber) {
             const student = masterStudents.find(s => s.ic_number === icNumber);
             if(!student) {
@@ -851,12 +918,13 @@
             document.getElementById('student-card-empty').classList.add('hidden');
             document.getElementById('student-card-active').classList.remove('hidden');
 
-            document.getElementById('disp-id').innerText = `KP: ${student.ic_number}`;
+            document.getElementById('disp-id').innerText = student.ic_number;
             document.getElementById('disp-name').innerText = student.full_name;
-            document.getElementById('disp-class').innerText = `Kelas: ${student.short_class} (${student.full_class})`;
-            document.getElementById('disp-gender').innerText = `Jantina: ${student.gender}`;
+            document.getElementById('disp-class').innerText = `${student.short_class} (${student.full_class})`;
+            document.getElementById('disp-gender').innerText = student.gender;
 
             renderBorrowedList();
+            renderHistoryList();
         }
 
         async function simulateScanIC() {
@@ -1015,32 +1083,39 @@
 
         function setFormTab(tab) {
             const formBorrow = document.getElementById('form-borrow');
-            const formReturn = document.getElementById('form-return');
             const btnBorrow = document.getElementById('btn-tab-borrow');
             const btnReturn = document.getElementById('btn-tab-return');
 
             if(tab === 'borrow') {
                 formBorrow.classList.remove('hidden');
-                formReturn.classList.add('hidden');
-                btnBorrow.className = "flex-1 py-2 text-center font-bold text-xs rounded-lg bg-indigo-600 text-white shadow-md";
-                btnReturn.className = "flex-1 py-2 text-center font-bold text-xs rounded-lg text-slate-400 hover:text-white";
+                btnBorrow.className = "flex-1 py-3 text-center font-extrabold text-xs rounded-xl bg-indigo-600 text-white shadow-lg flex items-center justify-center gap-2 transition";
+                btnReturn.className = "flex-1 py-3 text-center font-extrabold text-xs rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-2 transition";
             } else {
                 formBorrow.classList.add('hidden');
-                formReturn.classList.remove('hidden');
-                btnReturn.className = "flex-1 py-2 text-center font-bold text-xs rounded-lg bg-indigo-600 text-white shadow-md";
-                btnBorrow.className = "flex-1 py-2 text-center font-bold text-xs rounded-lg text-slate-400 hover:text-white";
+                btnReturn.className = "flex-1 py-3 text-center font-extrabold text-xs rounded-xl bg-indigo-600 text-white shadow-lg flex items-center justify-center gap-2 transition";
+                btnBorrow.className = "flex-1 py-3 text-center font-extrabold text-xs rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-2 transition";
             }
         }
 
+        // FUNGSI MEMINJAM BUKU BERSERTA TARIKH PERLU PULANG AUTOMATIK (+14 HARI)
         async function handleBorrow(e) {
             e.preventDefault();
             const title = document.getElementById('input-book-title').value;
             const code = document.getElementById('input-book-code').value || '-';
 
+            const today = new Date();
+            const dueDate = new Date();
+            dueDate.setDate(today.getDate() + 14); // Automatik +14 Hari
+
+            const formattedToday = today.toLocaleDateString('ms-MY');
+            const formattedDueDate = dueDate.toLocaleDateString('ms-MY');
+
             const tx = {
                 ic_number: currentStudentIC,
                 book_title: title,
                 book_code: code,
+                borrow_date: formattedToday,
+                due_date: formattedDueDate,
                 transaction_type: 'PINJAM',
                 status: 'DIPINJAM'
             };
@@ -1049,43 +1124,81 @@
             document.getElementById('input-book-title').value = '';
             document.getElementById('input-book-code').value = '';
 
-            alert(`Buku "${title}" berjaya direkodkan!`);
+            alert(`Buku "${title}" berjaya direkodkan! Tarikh Perlu Pulang: ${formattedDueDate}`);
             renderBorrowedList();
         }
 
+        // PAPARAN JADUAL BUKU SEDANG DIPINJAM (MENGIKUT FORMAT BAORANG.PNG)
         async function renderBorrowedList() {
-            const list = document.getElementById('borrowed-list');
+            const tbody = document.getElementById('borrowed-list-rows');
             const { data } = await supabaseClient.from('book_transactions')
                 .select('*')
                 .eq('ic_number', currentStudentIC)
-                .eq('transaction_type', 'PINJAM')
                 .eq('status', 'DIPINJAM');
 
             if(!data || data.length === 0) {
-                list.innerHTML = `<p class="text-xs text-slate-500 italic">Tiada rekod buku dipinjam.</p>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-500 italic">Tiada rekod pinjaman aktif.</td></tr>`;
                 return;
             }
 
-            list.innerHTML = data.map(t => `
-                <div class="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs">
-                    <div>
-                        <p class="font-bold text-white">${t.book_title}</p>
-                        <p class="text-slate-500">Kod: ${t.book_code}</p>
-                    </div>
-                    <button onclick="returnBook('${t.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">
-                        Pulangkan
-                    </button>
-                </div>
+            tbody.innerHTML = data.map((t, index) => `
+                <tr class="hover:bg-slate-900/50">
+                    <td class="p-3 text-center font-bold text-slate-400">${index + 1}</td>
+                    <td class="p-3 font-bold text-white">${t.book_title} <span class="text-[10px] text-slate-500 font-normal">(${t.book_code})</span></td>
+                    <td class="p-3 text-slate-300 font-mono">${t.borrow_date || new Date(t.created_at).toLocaleDateString('ms-MY')}</td>
+                    <td class="p-3 text-amber-400 font-mono font-bold">${t.due_date || '-'}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="returnBook('${t.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] transition shadow-md shadow-emerald-600/20">
+                            Pulangkan
+                        </button>
+                    </td>
+                </tr>
             `).join('');
         }
 
-        async function returnBook(txId) {
-            await supabaseClient.from('book_transactions').update({ status: 'DIPULANGKAN' }).eq('id', txId);
-            alert('Buku berjaya dipulangkan.');
-            renderBorrowedList();
+        // PAPARAN JADUAL SEJARAH PINJAMAN TERDAHULU (MENGIKUT FORMAT BAORANG.PNG)
+        async function renderHistoryList() {
+            const tbody = document.getElementById('history-list-rows');
+            const { data } = await supabaseClient.from('book_transactions')
+                .select('*')
+                .eq('ic_number', currentStudentIC)
+                .eq('status', 'DIPULANGKAN')
+                .order('created_at', { ascending: false });
+
+            if(!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-500 italic">Tiada sejarah pinjaman terdahulu.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.map((t, index) => `
+                <tr class="hover:bg-slate-900/50">
+                    <td class="p-3 text-center font-bold text-slate-400">${index + 1}</td>
+                    <td class="p-3 font-semibold text-slate-200">${t.book_title}</td>
+                    <td class="p-3 text-slate-400 font-mono">${t.borrow_date || new Date(t.created_at).toLocaleDateString('ms-MY')}</td>
+                    <td class="p-3 text-emerald-400 font-mono font-bold">${t.return_date || new Date(t.created_at).toLocaleDateString('ms-MY')}</td>
+                    <td class="p-3 text-right">
+                        <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase">
+                            Dipulangkan
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        // MOD KAMERA NATIVE LANTAS KURANG 1 SAAT (DIRECT FACING MODE)
+        // FUNGSI MEMULANGKAN BUKU
+        async function returnBook(txId) {
+            const today = new Date().toLocaleDateString('ms-MY');
+            await supabaseClient.from('book_transactions').update({ 
+                status: 'DIPULANGKAN',
+                return_date: today
+            }).eq('id', txId);
+            
+            alert('Buku berjaya dipulangkan.');
+            renderBorrowedList();
+            renderHistoryList();
+        }
+
+        // MOD KAMERA NATIVE LANTAS KURANG 1 SAAT
         function switchMode(mode) {
             const viewMobile = document.getElementById('view-mobile');
             if(mode === 'mobile') {
