@@ -21,62 +21,60 @@
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-   <style>
+<style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        /* ==================== TETAPAN FONT BAHARU (BESAR & CLEAR) ==================== */
-        .text-xs {
-            font-size: 0.875rem !important; /* Naiktaraf dari 12px ke 14px */
-        }
-        .text-\[10px\], .text-\[11px\] {
-            font-size: 0.8rem !important; /* Naiktaraf penerangan kecil dari 10px ke 12.8px */
-        }
-        
-        /* Mencerahkan warna teks kelabu supaya berfokus tinggi & jelas dibaca di kaunter */
-        .text-slate-400 {
-            color: #cbd5e1 !important; /* Tukar ke slate-300 yang lebih terang */
-        }
-        .text-slate-500 {
-            color: #94a3b8 !important; /* Tukar ke slate-400 yang lebih terang */
-        }
+
+        /* Mencerahkan warna teks kelabu supaya jelas dibaca pada latar gelap */
+        .text-slate-400 { color: #cbd5e1 !important; }
+        .text-slate-500 { color: #94a3b8 !important; }
 
         /* SEMBUNYIKAN WIDGET CETAKAN APABILA DIPAPARKAN PADA SKRIN */
         #printable-cards-container {
             display: none !important;
         }
 
-        /* GAYA CETAKAN SAIZ KAD RFID / MATRIK (CR80: 85.6mm x 54mm) */
+        /* GAYA CETAKAN KAD MATRIK MENEGAK / PORTRAIT (CR80: 54mm x 85.6mm) */
         @media print {
+            @page {
+                size: A4 portrait;
+                margin: 8mm;
+            }
+            
             body * { visibility: hidden !important; }
             #printable-cards-container, #printable-cards-container * { visibility: visible !important; }
+            
             #printable-cards-container { 
                 position: absolute !important; 
                 left: 0 !important; 
                 top: 0 !important; 
                 width: 100% !important; 
                 display: grid !important; 
-                grid-template-columns: repeat(2, 1fr) !important; 
-                gap: 15px !important;
-                padding: 10px !important;
+                grid-template-columns: repeat(3, 1fr) !important; /* 3 Lajur Kad sebaris */
+                gap: 12px !important;
+                padding: 0 !important;
             }
+            
             .no-print { display: none !important; }
             
-            .rfid-card {
-                width: 85.6mm !important;
-                height: 54mm !important;
-                border: 2px solid #3730a3 !important;
-                border-radius: 12px !important;
-                padding: 8px 12px !important;
+            /* KAD MENEGAK UNTUK LANYARD */
+            .rfid-card-vertical {
+                width: 54mm !important;
+                height: 85.6mm !important;
+                border: 2px solid #1e3a8a !important; /* Border Biru Korporat */
+                border-radius: 10px !important;
+                padding: 0 !important;
                 box-shadow: none !important;
                 page-break-inside: avoid !important;
                 background: #ffffff !important;
                 color: #000000 !important;
                 display: flex !important;
-                flex-direction: row !important;
-                align-items: center !important;
+                flex-direction: column !important;
                 justify-content: space-between !important;
+                align-items: center !important;
                 box-sizing: border-box !important;
+                overflow: hidden !important;
+                text-align: center !important;
             }
         }
 
@@ -343,30 +341,38 @@
                         </div>
                     </div>
 
-                    <!-- MODAL SENARAI HASIL CARIAN NAMA / KELAS -->
-                    <div id="modal-search-results" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                        <div class="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-3xl p-6 space-y-4 shadow-2xl">
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                                <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                                    <i data-lucide="users" class="w-4 h-4 text-indigo-400"></i> Pilih Murid Dari Hasil Carian
-                                </h3>
-                                <button onclick="closeSearchModal()" class="text-slate-400 hover:text-white text-xs bg-slate-800 px-2.5 py-1 rounded-lg">Tutup</button>
-                            </div>
-                            <div class="max-h-80 overflow-y-auto">
-                                <table class="w-full text-left text-xs">
-                                    <thead>
-                                        <tr class="border-b border-slate-800 text-slate-400 font-bold">
-                                            <th class="p-2.5">Nama Murid</th>
-                                            <th class="p-2.5">Kelas</th>
-                                            <th class="p-2.5">No. KP</th>
-                                            <th class="p-2.5 text-right">Tindakan</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="search-modal-rows" class="divide-y divide-slate-800/60"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                  <!-- MODAL SENARAI HASIL CARIAN NAMA / KELAS (TEMA KORPORAT CERAH) -->
+<div id="modal-search-results" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+        
+        <!-- HEADER BIRU KORPORAT -->
+        <div class="bg-blue-900 px-6 py-4 flex justify-between items-center text-white shrink-0">
+            <div class="flex items-center gap-2.5">
+                <i data-lucide="users" class="w-5 h-5 text-blue-300"></i>
+                <h3 class="text-sm font-bold tracking-wide">Pilih Murid Dari Hasil Carian</h3>
+            </div>
+            <button onclick="closeSearchModal()" class="text-blue-100 hover:text-white hover:bg-blue-800 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+                ✕ Tutup
+            </button>
+        </div>
+
+        <!-- JADUAL LATAR PUTIH -->
+        <div class="p-6 overflow-y-auto grow">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-blue-50 border-b-2 border-blue-900 text-blue-950 font-bold uppercase tracking-wider">
+                        <th class="p-3 rounded-l-xl">Nama Murid</th>
+                        <th class="p-3 text-center">Kelas</th>
+                        <th class="p-3 text-center">No. KP</th>
+                        <th class="p-3 text-right rounded-r-xl">Tindakan</th>
+                    </tr>
+                </thead>
+                <tbody id="search-modal-rows" class="divide-y divide-slate-200"></tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
 
                     <div class="grid grid-cols-1 gap-6">
                         <!-- Paparan Kosong Sedia Imbas -->
@@ -905,51 +911,73 @@
             generateAndPrintSelectedCards();
         }
 
-        function generateAndPrintSelectedCards() {
-            if(selectedMembersForPrint.size === 0) {
-                alert('Sila tandakan (tick) sekurang-kurangnya seorang ahli untuk dicetak.');
-                return;
+      function generateAndPrintSelectedCards() {
+    if (selectedMembersForPrint.size === 0) {
+        alert('Sila tandakan (tick) sekurang-kurangnya seorang ahli untuk dicetak.');
+        return;
+    }
+
+    const container = document.getElementById('printable-cards-container');
+    container.innerHTML = '';
+
+    const schoolName = window.SCHOOL_NAME || "PSS DIGITAL ZON PELANGAI";
+    const selectedList = masterStudents.filter(s => selectedMembersForPrint.has(s.ic_number));
+
+    selectedList.forEach(s => {
+        const card = document.createElement('div');
+        // Menggunakan gaya kad menegak baharu
+        card.className = "rfid-card-vertical border-2 border-blue-900 rounded-2xl bg-white flex flex-col justify-between items-center text-center overflow-hidden shadow-sm";
+        
+        card.innerHTML = `
+            <!-- HEADER KAD BIRU KORPORAT -->
+            <div class="bg-blue-900 text-white w-full py-2 px-1 flex flex-col justify-center items-center shrink-0 border-b-2 border-amber-400">
+                <span class="text-[8px] font-extrabold uppercase tracking-wider text-amber-300 leading-tight">${schoolName}</span>
+                <h4 class="text-[10px] font-black uppercase tracking-wide leading-tight mt-0.5">KAD AHLI SAHABAT PSS</h4>
+            </div>
+
+            <!-- BADAN UTAMA (QR CODE DI TENGAH) -->
+            <div class="flex-1 flex flex-col items-center justify-center p-2 w-full">
+                <div id="qrcode-${s.ic_number}" class="bg-white p-1.5 border border-slate-300 rounded-xl shadow-inner flex items-center justify-center"></div>
+            </div>
+
+            <!-- FOOTER (MAKLUMAT MURID DI BAWAH) -->
+            <div class="bg-slate-50 w-full p-2 border-t border-slate-200 flex flex-col justify-center items-center shrink-0">
+                <h3 class="text-[10px] font-black text-slate-900 uppercase leading-snug line-clamp-2 px-1 mb-1">
+                    ${s.full_name}
+                </h3>
+                
+                <div class="flex items-center justify-center gap-1.5 text-[8px] font-bold text-slate-700">
+                    <span class="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-300 font-extrabold">
+                        ${s.short_class}
+                    </span>
+                    <span class="font-mono text-slate-600">
+                        ${s.ic_number}
+                    </span>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(card);
+
+        // Jana QR Code menggunakan pustaka QRCode.js sedia ada
+        setTimeout(() => {
+            const qrElement = document.getElementById(`qrcode-${s.ic_number}`);
+            if (qrElement) {
+                qrElement.innerHTML = ''; // Buka petak bersih
+                new QRCode(qrElement, {
+                    text: s.ic_number,
+                    width: 95,
+                    height: 95
+                });
             }
+        }, 80);
+    });
 
-            const container = document.getElementById('printable-cards-container');
-            container.innerHTML = '';
-
-            const selectedList = masterStudents.filter(s => selectedMembersForPrint.has(s.ic_number));
-
-            selectedList.forEach(s => {
-                const card = document.createElement('div');
-                card.className = "rfid-card bg-white text-slate-900 border-2 border-indigo-700 rounded-xl p-2.5 flex items-center justify-between";
-                card.innerHTML = `
-                    <div class="flex flex-col justify-between h-full pr-2 text-left flex-1 min-w-0">
-                        <div>
-                            <p class="text-[9px] font-extrabold text-indigo-900 leading-tight uppercase">PSS ZON PELANGAI</p>
-                            <p class="text-[8px] font-bold text-slate-500">AHLI SAHABAT PSS</p>
-                        </div>
-                        <div class="my-1">
-                            <h4 class="font-extrabold text-slate-900 text-[11px] leading-tight break-words">${s.full_name}</h4>
-                            <p class="text-[9px] font-mono font-bold text-slate-600 mt-0.5">${s.ic_number}</p>
-                        </div>
-                        <div class="bg-indigo-900 text-white text-[9px] font-bold px-2 py-0.5 rounded text-center w-max">
-                            KELAS: ${s.short_class}
-                        </div>
-                    </div>
-                    <div id="qrcode-${s.ic_number}" class="shrink-0 p-1 bg-white border border-slate-300 rounded-lg flex items-center justify-center"></div>
-                `;
-                container.appendChild(card);
-
-                setTimeout(() => {
-                    new QRCode(document.getElementById(`qrcode-${s.ic_number}`), {
-                        text: s.ic_number,
-                        width: 110,
-                        height: 110
-                    });
-                }, 80);
-            });
-
-            setTimeout(() => {
-                window.print();
-            }, 400);
-        }
+    // Panggil tetingkap cetakan automatik
+    setTimeout(() => {
+        window.print();
+    }, 500);
+}
 
         // MEMAPARKAN JADUAL ADMIN BESERTA TAPISAN KELAS & SUSUNAN ABJAD A-Z
 function renderAdminDeleteTable() {
@@ -1089,12 +1117,12 @@ async function searchOrScanStudent() {
 function renderSearchModalRows(students) {
     const tbody = document.getElementById('search-modal-rows');
     tbody.innerHTML = students.map(s => `
-        <tr class="hover:bg-slate-800 transition border-b border-slate-800/80">
-            <td class="p-3.5 font-extrabold text-white text-sm">${s.full_name}</td>
-            <td class="p-3.5 text-amber-300 font-extrabold text-sm">${s.short_class}</td>
-            <td class="p-3.5 text-emerald-300 font-mono font-bold text-sm tracking-wider">${s.ic_number}</td>
+        <tr class="hover:bg-blue-50/70 transition">
+            <td class="p-3.5 font-bold text-slate-900 text-sm leading-snug">${s.full_name}</td>
+            <td class="p-3.5 text-center font-bold text-blue-700 text-xs">${s.short_class}</td>
+            <td class="p-3.5 text-center font-mono font-bold text-slate-600 text-xs tracking-wider">${s.ic_number}</td>
             <td class="p-3.5 text-right">
-                <button onclick="selectStudentFromModal('${s.ic_number}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/30 transition">
+                <button onclick="selectStudentFromModal('${s.ic_number}')" class="bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-md shadow-blue-900/20 active:scale-95">
                     Pilih Murid
                 </button>
             </td>
