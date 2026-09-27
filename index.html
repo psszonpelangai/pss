@@ -579,14 +579,28 @@
                         </form>
                     </div>
 
-                    <!-- Senarai & Padam Rekod Murid -->
+                    <!-- Senarai & Padam Rekod Murid (Dilengkapi Tapisan Kelas & Carian) -->
                     <div class="bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
-                        <h3 class="text-sm font-bold text-white">Pengurusan & Padam Rekod Murid</h3>
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4">
+                            <div>
+                                <h3 class="text-sm font-bold text-white">Pengurusan & Padam Rekod Murid</h3>
+                                <p class="text-xs text-slate-400">Tapis mengikut kelas atau cari nama murid untuk membuat semakan data.</p>
+                            </div>
+                            
+                            <!-- TAPISAN KELAS & CARIAN NAMA DALAM ADMIN -->
+                            <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                                <select id="admin-filter-class" onchange="filterAdminStudents()" class="bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl text-xs text-amber-300 font-extrabold focus:outline-none focus:border-amber-500">
+                                    <option value="">Semua Kelas</option>
+                                </select>
+                                <input type="text" id="admin-search-name" onkeyup="filterAdminStudents()" placeholder="Cari nama murid..." class="bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 w-full sm:w-48">
+                            </div>
+                        </div>
+
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
                                 <thead>
                                     <tr class="border-b border-slate-800 text-slate-400 font-bold">
-                                        <th class="p-3">Nama</th>
+                                        <th class="p-3">Nama Murid (A-Z)</th>
                                         <th class="p-3">No. KP</th>
                                         <th class="p-3">Kelas</th>
                                         <th class="p-3 text-right">Tindakan</th>
@@ -598,7 +612,6 @@
                     </div>
                 </div>
             </section>
-
         </main>
     </div>
 
@@ -728,34 +741,39 @@
             return lastDigit % 2 === 0 ? 'Perempuan' : 'Lelaki';
         }
 
-        function calculateCurrentClassFromIC(icRaw, namaKelasAPDM) {
-            const cleanIC = icRaw.toString().replace(/[^0-9]/g, '');
-            if (cleanIC.length < 6) return { shortClass: namaKelasAPDM || '-', fullClass: namaKelasAPDM || '-' };
+   function calculateCurrentClassFromIC(icRaw, namaKelasAPDM) {
+    const cleanIC = icRaw.toString().replace(/[^0-9]/g, '');
+    if (cleanIC.length < 6) return { shortClass: namaKelasAPDM || '-', fullClass: namaKelasAPDM || '-' };
 
-            let birthYearTwoDigits = parseInt(cleanIC.substring(0, 2));
-            let birthYear = (birthYearTwoDigits > 50) ? (1900 + birthYearTwoDigits) : (2000 + birthYearTwoDigits);
-            
-            const currentYear = new Date().getFullYear();
-            const age = currentYear - birthYear;
+    let birthYearTwoDigits = parseInt(cleanIC.substring(0, 2));
+    let birthYear = (birthYearTwoDigits > 50) ? (1900 + birthYearTwoDigits) : (2000 + birthYearTwoDigits);
+    
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthYear;
 
-            let calculatedYear = age - 6; 
+    let calculatedYear = age - 6; 
 
-            if (calculatedYear < 1) calculatedYear = 1;
-            if (calculatedYear > 6) calculatedYear = 6;
+    if (calculatedYear < 1) calculatedYear = 1;
+    if (calculatedYear > 6) calculatedYear = 6;
 
-            let classLetter = '';
-            let namaKelasBersih = '';
-            if (namaKelasAPDM && namaKelasAPDM !== '-') {
-                namaKelasBersih = namaKelasAPDM.toString().trim();
-                classLetter = namaKelasBersih.charAt(0).toUpperCase();
-            }
-
-            const shortClass = `${calculatedYear}${classLetter}`;
-            const fullClass = `Tahun ${calculatedYear} ${namaKelasBersih}`;
-
-            return { shortClass, fullClass };
+    let classLetter = '';
+    let namaKelasBersih = '';
+    
+    if (namaKelasAPDM && namaKelasAPDM !== '-') {
+        // Buang nombor/ruang di awal nama kelas (contoh: "1 HALIA" -> "HALIA")
+        namaKelasBersih = namaKelasAPDM.toString().trim().replace(/^[0-9\s-]+/, '');
+        
+        // Ambil huruf pertama abjad yang sah (contoh: "H")
+        if (namaKelasBersih.length > 0) {
+            classLetter = namaKelasBersih.charAt(0).toUpperCase();
         }
+    }
 
+    const shortClass = classLetter ? `${calculatedYear}${classLetter}` : `${calculatedYear}`;
+    const fullClass = `Tahun ${calculatedYear} ${namaKelasBersih || namaKelasAPDM}`;
+
+    return { shortClass, fullClass };
+}
         async function loadMasterStudents() {
             const { data } = await supabaseClient.from('master_students').select('*');
             if(data) {
@@ -933,21 +951,60 @@
             }, 400);
         }
 
-        function renderAdminDeleteTable() {
-            const tbody = document.getElementById('admin-delete-rows');
-            if(!tbody) return;
-            tbody.innerHTML = masterStudents.map(s => `
-                <tr class="hover:bg-slate-900/50">
-                    <td class="p-3 font-semibold text-white">${s.full_name}</td>
-                    <td class="p-3 text-slate-400">${s.ic_number}</td>
-                    <td class="p-3 text-indigo-400 font-bold">${s.short_class}</td>
-                    <td class="p-3 text-right">
-                        <button onclick="deleteStudent('${s.ic_number}')" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1 rounded-lg text-[11px] font-bold">Padam</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+        // MEMAPARKAN JADUAL ADMIN BESERTA TAPISAN KELAS & SUSUNAN ABJAD A-Z
+function renderAdminDeleteTable() {
+    // 1. Dapatkan senarai kelas unik yang wujud dalam pangkalan data
+    const classDropdown = document.getElementById('admin-filter-class');
+    if (classDropdown) {
+        const selectedValue = classDropdown.value; // Simpan nilai pilihan semasa
+        const uniqueClasses = [...new Set(masterStudents.map(s => s.short_class))].filter(Boolean).sort();
+        
+        classDropdown.innerHTML = `<option value="">Semua Kelas (${masterStudents.length} Murid)</option>` + 
+            uniqueClasses.map(c => `<option value="${c}">Kelas: ${c}</option>`).join('');
+            
+        classDropdown.value = selectedValue; // Mengekalkan pilihan kelas jika ada
+    }
 
+    // 2. Paparkan data terkini
+    filterAdminStudents();
+}
+
+// FUNGSI MENAPIS SENARAI MURID MENGIKUT KELAS & NAMA (SUSUNAN A-Z)
+function filterAdminStudents() {
+    const tbody = document.getElementById('admin-delete-rows');
+    if(!tbody) return;
+
+    const classQuery = document.getElementById('admin-filter-class') ? document.getElementById('admin-filter-class').value : '';
+    const nameQuery = document.getElementById('admin-search-name') ? document.getElementById('admin-search-name').value.toLowerCase().trim() : '';
+
+    // Tapis mengikut Kelas dan Nama
+    let filtered = masterStudents.filter(s => {
+        const matchesClass = !classQuery || s.short_class === classQuery;
+        const matchesName = !nameQuery || s.full_name.toLowerCase().includes(nameQuery) || s.ic_number.includes(nameQuery);
+        return matchesClass && matchesName;
+    });
+
+    // SUSUN NAMA MENGIKUT ABJAD (A TO Z)
+    filtered.sort((a, b) => a.full_name.localeCompare(b.full_name));
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-500 italic">Tiada rekod murid dijumpai.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(s => `
+        <tr class="hover:bg-slate-900/50 transition">
+            <td class="p-3 font-extrabold text-white text-sm">${s.full_name}</td>
+            <td class="p-3 text-slate-400 font-mono text-sm">${s.ic_number}</td>
+            <td class="p-3 text-amber-300 font-extrabold text-sm">${s.short_class}</td>
+            <td class="p-3 text-right">
+                <button onclick="deleteStudent('${s.ic_number}')" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1 rounded-lg text-xs font-bold transition shadow-md">
+                    Padam
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
         async function deleteStudent(icNumber) {
             if(confirm(`Adakah anda pasti mahu memadam rekod murid KP: ${icNumber}?`)) {
                 await supabaseClient.from('master_students').delete().eq('ic_number', icNumber);
@@ -1154,30 +1211,38 @@ function closeSearchModal() {
             }
         }
 
-        async function handleManualStudentAdd(e) {
-            e.preventDefault();
-            const name = document.getElementById('add-name').value;
-            const ic = document.getElementById('add-ic').value.replace(/[^0-9]/g, '');
-            const namaKelasAPDM = document.getElementById('add-class').value;
+       async function handleManualStudentAdd(e) {
+    e.preventDefault();
+    const name = document.getElementById('add-name').value.trim();
+    const ic = document.getElementById('add-ic').value.replace(/[^0-9]/g, '');
+    const namaKelasAPDM = document.getElementById('add-class').value.trim();
 
-            const classInfo = calculateCurrentClassFromIC(ic, namaKelasAPDM);
+    // Memastikan kelas diproses menerusi pembersihan angka di hadapan nama kelas
+    const classInfo = calculateCurrentClassFromIC(ic, namaKelasAPDM);
 
-            const newStudent = {
-                full_name: name,
-                ic_number: ic,
-                full_class: classInfo.fullClass,
-                short_class: classInfo.shortClass,
-                gender: getGenderFromIC(ic),
-                is_member: false
-            };
+    const newStudent = {
+        full_name: name.toUpperCase(),
+        ic_number: ic,
+        full_class: classInfo.fullClass,
+        short_class: classInfo.shortClass,
+        gender: getGenderFromIC(ic),
+        is_member: false
+    };
 
-            await supabaseClient.from('master_students').upsert([newStudent], { onConflict: 'ic_number' });
-            alert('Murid berjaya ditambah!');
-            document.getElementById('add-name').value = '';
-            document.getElementById('add-ic').value = '';
-            document.getElementById('add-class').value = '';
-            loadMasterStudents();
-        }
+    const { error } = await supabaseClient.from('master_students').upsert([newStudent], { onConflict: 'ic_number' });
+
+    if (error) {
+        console.error("Ralat simpan:", error);
+        alert("Gagal menyimpan rekod murid: " + error.message);
+        return;
+    }
+
+    alert(`Murid ${name.toUpperCase()} berjaya ditambah di bawah kelas ${classInfo.shortClass}!`);
+    document.getElementById('add-name').value = '';
+    document.getElementById('add-ic').value = '';
+    document.getElementById('add-class').value = '';
+    loadMasterStudents();
+}
 
         // FUNGSI SWITCH TAB DIKEMASKINI DENGAN SOKONGAN MOBILE NAV
         function switchTab(tab) {
