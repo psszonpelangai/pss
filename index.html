@@ -930,25 +930,28 @@
             loadMasterStudents();
         }
 
-        async function openStudentByIC(icNumber) {
-            const student = masterStudents.find(s => s.ic_number === icNumber);
-            if(!student) {
-                alert(`No KP ${icNumber} tiada dalam pangkalan data.`);
-                return;
-            }
+     async function openStudentByIC(icNumber) {
+    // Paksa tukar kepada String bersih tanpa ruang kosong
+    const cleanIC = icNumber.toString().replace(/[^0-9]/g, '');
+    const student = masterStudents.find(s => s.ic_number.toString().trim() === cleanIC);
+    
+    if(!student) {
+        alert(`No KP ${icNumber} tiada dalam pangkalan data.`);
+        return;
+    }
 
-            currentStudentIC = icNumber;
-            document.getElementById('student-card-empty').classList.add('hidden');
-            document.getElementById('student-card-active').classList.remove('hidden');
+    currentStudentIC = cleanIC; // Simpan nilai IC sebagai String
+    document.getElementById('student-card-empty').classList.add('hidden');
+    document.getElementById('student-card-active').classList.remove('hidden');
 
-            document.getElementById('disp-id').innerText = student.ic_number;
-            document.getElementById('disp-name').innerText = student.full_name;
-            document.getElementById('disp-class').innerText = `${student.short_class} (${student.full_class})`;
-            document.getElementById('disp-gender').innerText = student.gender;
+    document.getElementById('disp-id').innerText = student.ic_number;
+    document.getElementById('disp-name').innerText = student.full_name;
+    document.getElementById('disp-class').innerText = `${student.short_class} (${student.full_class})`;
+    document.getElementById('disp-gender').innerText = student.gender;
 
-            renderBorrowedList();
-            renderHistoryList();
-        }
+    renderBorrowedList();
+    renderHistoryList();
+}
 
         async function simulateScanIC() {
             const ic = document.getElementById('sim-ic-input').value.trim();
@@ -1140,90 +1143,112 @@
             }
         }
 
-        async function handleBorrow(e) {
-            e.preventDefault();
-            const title = document.getElementById('input-book-title').value;
-            const code = document.getElementById('input-book-code').value || '-';
+   async function handleBorrow(e) {
+    e.preventDefault();
+    const title = document.getElementById('input-book-title').value.trim();
+    const code = document.getElementById('input-book-code').value.trim() || '-';
 
-            const today = new Date();
-            const dueDate = new Date();
-            dueDate.setDate(today.getDate() + 14);
+    if (!title) {
+        alert("Sila masukkan tajuk buku.");
+        return;
+    }
 
-            const formattedToday = today.toLocaleDateString('ms-MY');
-            const formattedDueDate = dueDate.toLocaleDateString('ms-MY');
+    const today = new Date();
+    const dueDate = new Date();
+    dueDate.setDate(today.getDate() + 14);
 
-            const tx = {
-                ic_number: currentStudentIC,
-                book_title: title,
-                book_code: code,
-                borrow_date: formattedToday,
-                due_date: formattedDueDate,
-                transaction_type: 'PINJAM',
-                status: 'DIPINJAM'
-            };
+    const formattedToday = today.toLocaleDateString('ms-MY');
+    const formattedDueDate = dueDate.toLocaleDateString('ms-MY');
 
-            await supabaseClient.from('book_transactions').insert([tx]);
-            document.getElementById('input-book-title').value = '';
-            document.getElementById('input-book-code').value = '';
+    const tx = {
+        ic_number: String(currentStudentIC).trim(), // Pastikan String & tiada ruang kosong
+        book_title: title,
+        book_code: code,
+        borrow_date: formattedToday,
+        due_date: formattedDueDate,
+        transaction_type: 'PINJAM',
+        status: 'DIPINJAM'
+    };
 
-            alert(`Buku "${title}" berjaya direkodkan! Tarikh Perlu Pulang: ${formattedDueDate}`);
-            renderBorrowedList();
-        }
+    const { error } = await supabaseClient.from('book_transactions').insert([tx]);
+    
+    if (error) {
+        console.error("Ralat simpan:", error);
+        alert("Gagal merekodkan pinjaman ke pangkalan data: " + error.message);
+        return;
+    }
 
-        async function renderBorrowedList() {
-            const tbody = document.getElementById('borrowed-list-rows');
-            const { data } = await supabaseClient.from('book_transactions')
-                .select('*')
-                .eq('ic_number', currentStudentIC)
-                .eq('status', 'DIPINJAM');
+    document.getElementById('input-book-title').value = '';
+    document.getElementById('input-book-code').value = '';
 
-            if(!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-500 italic">Tiada rekod pinjaman aktif.</td></tr>`;
-                return;
-            }
+    alert(`Buku "${title}" berjaya direkodkan! Tarikh Perlu Pulang: ${formattedDueDate}`);
+    renderBorrowedList();
+}
 
-            tbody.innerHTML = data.map((t, index) => `
-                <tr class="hover:bg-slate-900/50">
-                    <td class="p-3 text-center font-bold text-slate-400">${index + 1}</td>
-                    <td class="p-3 font-bold text-white">${t.book_title} <span class="text-[10px] text-slate-500 font-normal">(${t.book_code})</span></td>
-                    <td class="p-3 text-slate-300 font-mono">${t.borrow_date || new Date(t.created_at).toLocaleDateString('ms-MY')}</td>
-                    <td class="p-3 text-amber-400 font-mono font-bold">${t.due_date || '-'}</td>
-                    <td class="p-3 text-right">
-                        <button onclick="returnBook('${t.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] transition shadow-md shadow-emerald-600/20">
-                            Pulangkan
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+async function renderBorrowedList() {
+    const tbody = document.getElementById('borrowed-list-rows');
+    
+    const { data, error } = await supabaseClient.from('book_transactions')
+        .select('*')
+        .eq('ic_number', String(currentStudentIC).trim()) // Pastikan String & trim
+        .eq('status', 'DIPINJAM');
 
-        async function renderHistoryList() {
-            const tbody = document.getElementById('history-list-rows');
-            const { data } = await supabaseClient.from('book_transactions')
-                .select('*')
-                .eq('ic_number', currentStudentIC)
-                .eq('status', 'DIPULANGKAN')
-                .order('created_at', { ascending: false });
+    if(error) {
+        console.error("Ralat ambil data:", error);
+    }
 
-            if(!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-500 italic">Tiada sejarah pinjaman terdahulu.</td></tr>`;
-                return;
-            }
+    if(!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-500 italic">Tiada rekod pinjaman aktif.</td></tr>`;
+        return;
+    }
 
-            tbody.innerHTML = data.map((t, index) => `
-                <tr class="hover:bg-slate-900/50">
-                    <td class="p-3 text-center font-bold text-slate-400">${index + 1}</td>
-                    <td class="p-3 font-semibold text-slate-200">${t.book_title}</td>
-                    <td class="p-3 text-slate-400 font-mono">${t.borrow_date || new Date(t.created_at).toLocaleDateString('ms-MY')}</td>
-                    <td class="p-3 text-emerald-400 font-mono font-bold">${t.return_date || new Date(t.created_at).toLocaleDateString('ms-MY')}</td>
-                    <td class="p-3 text-right">
-                        <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase">
-                            Dipulangkan
-                        </span>
-                    </td>
-                </tr>
-            `).join('');
-        }
+    tbody.innerHTML = data.map((t, index) => `
+        <tr class="hover:bg-slate-900/50">
+            <td class="p-3 text-center font-bold text-slate-400">${index + 1}</td>
+            <td class="p-3 font-bold text-white">${t.book_title} <span class="text-[10px] text-slate-500 font-normal">(${t.book_code})</span></td>
+            <td class="p-3 text-slate-300 font-mono">${t.borrow_date || new Date(t.created_at).toLocaleDateString('ms-MY')}</td>
+            <td class="p-3 text-amber-400 font-mono font-bold">${t.due_date || '-'}</td>
+            <td class="p-3 text-right">
+                <button onclick="returnBook('${t.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] transition shadow-md shadow-emerald-600/20">
+                    Pulangkan
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function renderHistoryList() {
+    const tbody = document.getElementById('history-list-rows');
+    
+    const { data, error } = await supabaseClient.from('book_transactions')
+        .select('*')
+        .eq('ic_number', String(currentStudentIC).trim()) // Dikemaskini ke String
+        .eq('status', 'DIPULANGKAN')
+        .order('created_at', { ascending: false });
+
+    if(error) {
+        console.error("Ralat sejarah:", error);
+    }
+
+    if(!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-500 italic">Tiada sejarah pinjaman terdahulu.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = data.map((t, index) => `
+        <tr class="hover:bg-slate-900/50">
+            <td class="p-3 text-center font-bold text-slate-400">${index + 1}</td>
+            <td class="p-3 font-semibold text-slate-200">${t.book_title}</td>
+            <td class="p-3 text-slate-400 font-mono">${t.borrow_date || new Date(t.created_at).toLocaleDateString('ms-MY')}</td>
+            <td class="p-3 text-emerald-400 font-mono font-bold">${t.return_date || new Date(t.created_at).toLocaleDateString('ms-MY')}</td>
+            <td class="p-3 text-right">
+                <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase">
+                    Dipulangkan
+                </span>
+            </td>
+        </tr>
+    `).join('');
+}
 
         async function returnBook(txId) {
             const today = new Date().toLocaleDateString('ms-MY');
