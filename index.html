@@ -21,10 +21,26 @@
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <style>
+   <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         
+        /* ==================== TETAPAN FONT BAHARU (BESAR & CLEAR) ==================== */
+        .text-xs {
+            font-size: 0.875rem !important; /* Naiktaraf dari 12px ke 14px */
+        }
+        .text-\[10px\], .text-\[11px\] {
+            font-size: 0.8rem !important; /* Naiktaraf penerangan kecil dari 10px ke 12.8px */
+        }
+        
+        /* Mencerahkan warna teks kelabu supaya berfokus tinggi & jelas dibaca di kaunter */
+        .text-slate-400 {
+            color: #cbd5e1 !important; /* Tukar ke slate-300 yang lebih terang */
+        }
+        .text-slate-500 {
+            color: #94a3b8 !important; /* Tukar ke slate-400 yang lebih terang */
+        }
+
         /* SEMBUNYIKAN WIDGET CETAKAN APABILA DIPAPARKAN PADA SKRIN */
         #printable-cards-container {
             display: none !important;
@@ -307,7 +323,7 @@
                 </div>
             </section>
 
-            <!-- TAB 3: MOD PENGAWAS - KAUNTER PINJAMAN & PEMULANGAN BUKU -->
+           <!-- TAB 3: MOD PENGAWAS - KAUNTER PINJAMAN & PEMULANGAN BUKU -->
             <section id="content-kaunter" class="hidden space-y-6">
 
                 <div id="kaunter-active-view" class="space-y-6">
@@ -315,15 +331,40 @@
                         <div class="flex items-center gap-3">
                             <i data-lucide="sparkles" class="w-5 h-5 text-amber-400"></i>
                             <div>
-                                <h3 class="text-xs font-bold text-white">Kaunter Imbasan Masa-Nyata (Sedia Terbuka)</h3>
-                                <p class="text-[11px] text-slate-400">Halakan imbasan QR telefon atau masukkan No. KP ahli di bawah.</p>
+                                <h3 class="text-xs font-bold text-white">Kaunter Imbasan & Carian Murid</h3>
+                                <p class="text-[11px] text-slate-400">Imbas QR atau cari guna <b class="text-indigo-400">Nama Murid</b>, <b class="text-indigo-400">Kelas</b>, atau <b class="text-indigo-400">No. KP</b>.</p>
                             </div>
                         </div>
                         <div class="flex gap-2 w-full md:w-auto">
-                            <input type="text" id="sim-ic-input" placeholder="Masukkan No. KP Ahli..." class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 w-full md:w-64">
-                            <button onclick="simulateScanIC()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                            <input type="text" id="sim-ic-input" onkeypress="if(event.key==='Enter') searchOrScanStudent()" placeholder="Cari Nama, Kelas (Cth: 5N), atau No. KP..." class="bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 w-full md:w-80">
+                            <button onclick="searchOrScanStudent()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0">
                                 <i data-lucide="search" class="w-3.5 h-3.5"></i> Cari
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- MODAL SENARAI HASIL CARIAN NAMA / KELAS -->
+                    <div id="modal-search-results" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div class="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-3xl p-6 space-y-4 shadow-2xl">
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                    <i data-lucide="users" class="w-4 h-4 text-indigo-400"></i> Pilih Murid Dari Hasil Carian
+                                </h3>
+                                <button onclick="closeSearchModal()" class="text-slate-400 hover:text-white text-xs bg-slate-800 px-2.5 py-1 rounded-lg">Tutup</button>
+                            </div>
+                            <div class="max-h-80 overflow-y-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead>
+                                        <tr class="border-b border-slate-800 text-slate-400 font-bold">
+                                            <th class="p-2.5">Nama Murid</th>
+                                            <th class="p-2.5">Kelas</th>
+                                            <th class="p-2.5">No. KP</th>
+                                            <th class="p-2.5 text-right">Tindakan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="search-modal-rows" class="divide-y divide-slate-800/60"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
@@ -953,13 +994,69 @@
     renderHistoryList();
 }
 
-        async function simulateScanIC() {
-            const ic = document.getElementById('sim-ic-input').value.trim();
-            if(ic) {
-                await sendScanToSupabase(ic);
-                openStudentByIC(ic);
-            }
-        }
+       // FUNGSI CARIAN PINTAR (NAMA / KELAS / NO. KP)
+async function searchOrScanStudent() {
+    const inputVal = document.getElementById('sim-ic-input').value.trim().toLowerCase();
+    
+    if(!inputVal) {
+        alert('Sila masukkan Nama, Kelas, atau No. KP murid.');
+        return;
+    }
+
+    // Semak padanan carian daripada pangkalan data master_students
+    const matches = masterStudents.filter(s => 
+        s.full_name.toLowerCase().includes(inputVal) || 
+        s.ic_number.toString().includes(inputVal) || 
+        s.short_class.toLowerCase().includes(inputVal) ||
+        s.full_class.toLowerCase().includes(inputVal)
+    );
+
+    if (matches.length === 0) {
+        alert(`Tiada rekod murid dijumpai untuk carian: "${inputVal}"`);
+        return;
+    }
+
+    // Jika hanya 1 murid dijumpai, terus buka borang murid
+    if (matches.length === 1) {
+        await sendScanToSupabase(matches[0].ic_number);
+        openStudentByIC(matches[0].ic_number);
+        document.getElementById('sim-ic-input').value = '';
+        closeSearchModal();
+        return;
+    }
+
+    // Jika ada banyak padanan (cth: taip "5N" atau nama yang ada banyak keputusan), buka popup pilihan
+    renderSearchModalRows(matches);
+}
+
+function renderSearchModalRows(students) {
+    const tbody = document.getElementById('search-modal-rows');
+    tbody.innerHTML = students.map(s => `
+        <tr class="hover:bg-slate-800 transition border-b border-slate-800/80">
+            <td class="p-3.5 font-extrabold text-white text-sm">${s.full_name}</td>
+            <td class="p-3.5 text-amber-300 font-extrabold text-sm">${s.short_class}</td>
+            <td class="p-3.5 text-emerald-300 font-mono font-bold text-sm tracking-wider">${s.ic_number}</td>
+            <td class="p-3.5 text-right">
+                <button onclick="selectStudentFromModal('${s.ic_number}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/30 transition">
+                    Pilih Murid
+                </button>
+            </td>
+        </tr>
+    `).join('');
+
+    document.getElementById('modal-search-results').classList.remove('hidden');
+}
+
+async function selectStudentFromModal(icNumber) {
+    await sendScanToSupabase(icNumber);
+    openStudentByIC(icNumber);
+    document.getElementById('sim-ic-input').value = '';
+    closeSearchModal();
+}
+
+function closeSearchModal() {
+    document.getElementById('modal-search-results').classList.add('hidden');
+}
 
         function verifyAdminPIN() {
             const pin = document.getElementById('admin-pin-input').value;
