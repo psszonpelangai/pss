@@ -1143,7 +1143,8 @@
             }
         }
 
-   async function handleBorrow(e) {
+ // FUNGSI MEMINJAM BUKU BERSERTA TARIKH & MASA MASA-NYATA
+async function handleBorrow(e) {
     e.preventDefault();
     const title = document.getElementById('input-book-title').value.trim();
     const code = document.getElementById('input-book-code').value.trim() || '-';
@@ -1153,18 +1154,19 @@
         return;
     }
 
-    const today = new Date();
+    const now = new Date();
     const dueDate = new Date();
-    dueDate.setDate(today.getDate() + 14);
+    dueDate.setDate(now.getDate() + 14); // Automatik Tempoh 14 Hari
 
-    const formattedToday = today.toLocaleDateString('ms-MY');
+    // Format Tarikh & Masa lengkap (Contoh: 27/09/2026, 8:45 PM)
+    const formattedTodayWithTime = now.toLocaleDateString('ms-MY') + ' (' + now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' }) + ')';
     const formattedDueDate = dueDate.toLocaleDateString('ms-MY');
 
     const tx = {
-        ic_number: String(currentStudentIC).trim(), // Pastikan String & tiada ruang kosong
+        ic_number: String(currentStudentIC).trim(),
         book_title: title,
         book_code: code,
-        borrow_date: formattedToday,
+        borrow_date: formattedTodayWithTime, // Menyimpan Tarikh & Masa
         due_date: formattedDueDate,
         transaction_type: 'PINJAM',
         status: 'DIPINJAM'
@@ -1181,16 +1183,17 @@
     document.getElementById('input-book-title').value = '';
     document.getElementById('input-book-code').value = '';
 
-    alert(`Buku "${title}" berjaya direkodkan! Tarikh Perlu Pulang: ${formattedDueDate}`);
+    alert(`Buku "${title}" berjaya direkodkan!\n\nTarikh & Masa Pinjam: ${formattedTodayWithTime}\nTarikh Perlu Pulang: ${formattedDueDate}`);
     renderBorrowedList();
 }
 
+// PAPARAN JADUAL SENARAI BUKU SEDANG DIPINJAM
 async function renderBorrowedList() {
     const tbody = document.getElementById('borrowed-list-rows');
     
     const { data, error } = await supabaseClient.from('book_transactions')
         .select('*')
-        .eq('ic_number', String(currentStudentIC).trim()) // Pastikan String & trim
+        .eq('ic_number', String(currentStudentIC).trim())
         .eq('status', 'DIPINJAM');
 
     if(error) {
@@ -1205,8 +1208,8 @@ async function renderBorrowedList() {
     tbody.innerHTML = data.map((t, index) => `
         <tr class="hover:bg-slate-900/50">
             <td class="p-3 text-center font-bold text-slate-400">${index + 1}</td>
-            <td class="p-3 font-bold text-white">${t.book_title} <span class="text-[10px] text-slate-500 font-normal">(${t.book_code})</span></td>
-            <td class="p-3 text-slate-300 font-mono">${t.borrow_date || new Date(t.created_at).toLocaleDateString('ms-MY')}</td>
+            <td class="p-3 font-bold text-white">${t.book_title} <span class="text-[10px] text-slate-500 font-normal">(${t.book_code || '-'})</span></td>
+            <td class="p-3 text-indigo-300 font-mono font-semibold">${t.borrow_date || '-'}</td>
             <td class="p-3 text-amber-400 font-mono font-bold">${t.due_date || '-'}</td>
             <td class="p-3 text-right">
                 <button onclick="returnBook('${t.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] transition shadow-md shadow-emerald-600/20">
@@ -1217,12 +1220,13 @@ async function renderBorrowedList() {
     `).join('');
 }
 
+// PAPARAN JADUAL SEJARAH PINJAMAN TERDAHULU
 async function renderHistoryList() {
     const tbody = document.getElementById('history-list-rows');
     
     const { data, error } = await supabaseClient.from('book_transactions')
         .select('*')
-        .eq('ic_number', String(currentStudentIC).trim()) // Dikemaskini ke String
+        .eq('ic_number', String(currentStudentIC).trim())
         .eq('status', 'DIPULANGKAN')
         .order('created_at', { ascending: false });
 
@@ -1239,8 +1243,8 @@ async function renderHistoryList() {
         <tr class="hover:bg-slate-900/50">
             <td class="p-3 text-center font-bold text-slate-400">${index + 1}</td>
             <td class="p-3 font-semibold text-slate-200">${t.book_title}</td>
-            <td class="p-3 text-slate-400 font-mono">${t.borrow_date || new Date(t.created_at).toLocaleDateString('ms-MY')}</td>
-            <td class="p-3 text-emerald-400 font-mono font-bold">${t.return_date || new Date(t.created_at).toLocaleDateString('ms-MY')}</td>
+            <td class="p-3 text-slate-400 font-mono">${t.borrow_date || '-'}</td>
+            <td class="p-3 text-emerald-400 font-mono font-bold">${t.return_date || '-'}</td>
             <td class="p-3 text-right">
                 <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase">
                     Dipulangkan
@@ -1250,17 +1254,25 @@ async function renderHistoryList() {
     `).join('');
 }
 
-        async function returnBook(txId) {
-            const today = new Date().toLocaleDateString('ms-MY');
-            await supabaseClient.from('book_transactions').update({ 
-                status: 'DIPULANGKAN',
-                return_date: today
-            }).eq('id', txId);
-            
-            alert('Buku berjaya dipulangkan.');
-            renderBorrowedList();
-            renderHistoryList();
-        }
+// FUNGSI MEMULANGKAN BUKU BERSERTA TARIKH & MASA PEMULANGAN
+async function returnBook(txId) {
+    const now = new Date();
+    const formattedReturnWithTime = now.toLocaleDateString('ms-MY') + ' (' + now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' }) + ')';
+
+    const { error } = await supabaseClient.from('book_transactions').update({ 
+        status: 'DIPULANGKAN',
+        return_date: formattedReturnWithTime
+    }).eq('id', txId);
+    
+    if (error) {
+        alert("Gagal memulangkan buku: " + error.message);
+        return;
+    }
+
+    alert('Buku berjaya dipulangkan!');
+    renderBorrowedList();
+    renderHistoryList();
+}
 
         function switchMode(mode) {
             const viewMobile = document.getElementById('view-mobile');
