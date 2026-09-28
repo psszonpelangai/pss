@@ -91,28 +91,29 @@
     <!-- ==================== SIDEBAR NAVIGATION (DESKTOP COLLAPSIBLE & MOBILE RESPONSIVE) ==================== -->
     <aside id="sidebar-menu" class="fixed md:static inset-y-0 left-0 w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 no-print z-50 transform -translate-x-full md:translate-x-0 transition-all duration-300 ease-in-out shadow-xl md:shadow-sm">
         <div>
-            <!-- Brand Logo Header & Butang Toggle Collapse Desktop -->
-            <div class="p-4 md:p-5 flex items-center justify-between border-b border-slate-100">
-                <div class="flex items-center gap-3 overflow-hidden">
-                    <div class="p-2.5 bg-indigo-600 rounded-xl shadow-md shadow-indigo-600/20 text-white shrink-0">
-                        <i data-lucide="book-open-check" class="w-6 h-6"></i>
-                    </div>
-                    <div class="sidebar-text whitespace-nowrap transition-opacity duration-200">
-                        <h1 class="font-extrabold text-sm tracking-wide text-slate-900">PSS DIGITAL</h1>
-                        <p class="text-[11px] font-bold text-indigo-600" id="header-school-zone">ZON PELANGAI</p>
-                    </div>
-                </div>
+           <!-- Brand Logo Header & Butang Toggle Collapse Desktop -->
+<div id="sidebar-header" class="p-4 flex items-center justify-between border-b border-slate-100 transition-all duration-300">
+    <div class="flex items-center gap-3 min-w-0">
+        <!-- Ikon Logo (Tetap Kelihatan Penuh & Berada Di Tengah Apabila Kuncup) -->
+        <div class="p-2.5 bg-indigo-600 rounded-xl shadow-md shadow-indigo-600/20 text-white shrink-0 flex items-center justify-center">
+            <i data-lucide="book-open-check" class="w-6 h-6"></i>
+        </div>
+        <div class="sidebar-text whitespace-nowrap transition-opacity duration-200">
+            <h1 class="font-extrabold text-sm tracking-wide text-slate-900">PSS DIGITAL</h1>
+            <p class="text-[11px] font-bold text-indigo-600" id="header-school-zone">ZON PELANGAI</p>
+        </div>
+    </div>
 
-                <!-- Butang Kuncup/Kembang (Desktop sahaja) -->
-                <button onclick="toggleDesktopSidebar()" class="hidden md:flex text-slate-400 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-slate-100 transition">
-                    <i id="collapse-icon" data-lucide="chevron-left" class="w-5 h-5 transition-transform duration-300"></i>
-                </button>
+    <!-- Butang Kuncup/Kembang (Desktop sahaja) -->
+    <button onclick="toggleDesktopSidebar()" class="hidden md:flex text-slate-400 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-slate-100 transition shrink-0">
+        <i id="collapse-icon" data-lucide="chevron-left" class="w-5 h-5 transition-transform duration-300"></i>
+    </button>
 
-                <!-- Butang Tutup (Mobile sahaja) -->
-                <button onclick="toggleMobileSidebar()" class="md:hidden text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
+    <!-- Butang Tutup (Mobile sahaja) -->
+    <button onclick="toggleMobileSidebar()" class="md:hidden text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 shrink-0">
+        <i data-lucide="x" class="w-5 h-5"></i>
+    </button>
+</div>
 
             <!-- Navigation Links -->
             <nav class="p-3 space-y-1.5 text-xs font-semibold">
@@ -151,26 +152,40 @@
                 </button>
             </nav>
         </div>
+	<!-- School Info & Supabase Sync Footer -->
+<div id="sidebar-footer" class="p-3.5 m-3 bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-900 border border-indigo-800/60 rounded-2xl text-xs space-y-2.5 shadow-lg relative overflow-hidden transition-all duration-300">
+    <!-- Hiasan Cahaya Latar Belakang -->
+    <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
 
-        <!-- School Info & Supabase Sync Footer -->
-        <div class="p-3 m-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs space-y-2 shadow-sm overflow-hidden">
-            <div class="flex items-center gap-2 text-indigo-900 font-bold border-b border-slate-200 pb-2">
-                <i data-lucide="school" class="w-4 h-4 text-amber-600 shrink-0"></i>
-                <div class="sidebar-text whitespace-nowrap">
-                    <p class="text-[11px] leading-none text-slate-900 font-bold" id="footer-school-name">SK Pelangai</p>
-                    <p class="text-[9px] text-slate-500" id="footer-school-code">Kod: CBA0001</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2 text-emerald-600 font-bold pt-1">
-                <span class="relative flex h-2 w-2 shrink-0">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span class="sidebar-text whitespace-nowrap">Supabase Realtime</span>
-            </div>
-            <p id="sync-status" class="sidebar-text text-[10px] text-slate-500 font-medium whitespace-nowrap">Terhubung & sedia imbas.</p>
+    <!-- Info Sekolah & Lencana -->
+    <div id="footer-main-info" class="flex items-center gap-2.5 border-b border-indigo-800/50 pb-2.5 transition-all duration-300">
+        <!-- Kotak Lencana Sekolah -->
+        <div id="footer-logo-container" class="w-10 h-10 bg-amber-400/10 border border-amber-400/20 text-amber-400 rounded-xl shrink-0 shadow-sm flex items-center justify-center overflow-hidden p-1 transition-all duration-300">
+            <i id="footer-default-icon" data-lucide="school" class="w-5 h-5"></i>
+            <img id="footer-school-logo" src="" alt="Lencana" class="w-full h-full object-contain hidden">
         </div>
+        
+        <div class="sidebar-text whitespace-nowrap min-w-0 flex-1">
+            <p class="text-[12px] leading-snug text-white font-black tracking-wide truncate" id="footer-school-name">SK PELANGAI</p>
+            <span class="inline-block mt-0.5 px-2 py-0.5 bg-amber-400/20 border border-amber-400/30 text-amber-300 rounded-md text-[9px] font-extrabold tracking-wider" id="footer-school-code">KOD: CBA0001</span>
+        </div>
+    </div>
+
+    <!-- Status Supabase Realtime -->
+    <div id="footer-status-bar" class="flex items-center justify-between pt-0.5 transition-all duration-300">
+        <div class="flex items-center gap-2 text-emerald-400 font-bold justify-center">
+            <span class="relative flex h-2 w-2 shrink-0">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span class="sidebar-text text-[10px] font-extrabold tracking-wide text-emerald-300">Supabase Cloud</span>
+        </div>
+        <span class="sidebar-text text-[9px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono font-bold" id="sync-status">Terhubung</span>
+    </div>
+</div>
+	
     </aside>
+
     <!-- ==================== MAIN CONTENT AREA ==================== -->
     <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
 
@@ -598,71 +613,111 @@
                     </button>
                 </div>
 
-                <div id="admin-dashboard" class="hidden space-y-6">
-                    <!-- Import Excel (.xls/.xlsx) atau CSV APDM -->
-                    <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
-                        <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-                            <i data-lucide="upload-cloud" class="w-5 h-5 text-indigo-600"></i> Import Data Induk APDM / idME (Excel .xls/.xlsx atau .csv)
-                        </h2>
-                        <p class="text-xs text-slate-600 font-semibold">Muat naik fail Excel terus dari APDM/idME. Sistem mengira tahun kelas semasa murid secara automatik mengikut tahun lahir No. KP.</p>
+              <div id="admin-dashboard" class="hidden space-y-6">
 
-                        <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center bg-slate-50 space-y-3">
-                            <i data-lucide="file-spreadsheet" class="w-10 h-10 text-slate-400 mx-auto"></i>
-                            <input type="file" id="excel-file-input" accept=".xls,.xlsx,.csv" class="hidden" onchange="handleExcelImport(event)">
-                            <div>
-                                <button onclick="document.getElementById('excel-file-input').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-extrabold transition shadow-md shadow-indigo-600/20">
-                                    Pilih Fail Excel / CSV APDM
-                                </button>
-                            </div>
-                            <p class="text-[11px] text-slate-500 font-semibold">Menyokong fail Excel APDM seperti <b>data murid.xls</b> terus tanpa perlu menukar format.</p>
-                        </div>
-                    </div>
+    <!-- 1. BORANG TETAPAN PROFIL SEKOLAH & PSS -->
+    <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
+        <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+            <i data-lucide="settings" class="w-5 h-5 text-indigo-600"></i> Tetapan Profil Sekolah & PSS
+        </h2>
+        <p class="text-xs text-slate-600 font-semibold">Kemaskini maklumat sekolah untuk dipaparkan secara dinamik pada kad ahli QR, footer sidebar, dan sistem.</p>
 
-                    <!-- Tambah Murid Manual -->
-                    <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
-                        <h3 class="text-sm font-extrabold text-slate-900">Tambah Murid Induk (Manual)</h3>
-                        <form onsubmit="handleManualStudentAdd(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" id="add-name" required placeholder="Nama Murid" class="bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs text-slate-900 font-bold focus:bg-white focus:border-indigo-600 transition">
-                            <input type="text" id="add-ic" required placeholder="No. KP (Tanpa -)" class="bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs text-slate-900 font-bold focus:bg-white focus:border-indigo-600 transition">
-                            <input type="text" id="add-class" required placeholder="Nama Kelas (Cth: AZKIYA)" class="bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs text-slate-900 font-bold focus:bg-white focus:border-indigo-600 transition">
-                            <button type="submit" class="md:col-span-3 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold py-2.5 rounded-xl text-xs transition shadow-md shadow-indigo-600/20">
-                                + Simpan Rekod Murid Manual
-                            </button>
-                        </form>
-                    </div>
+        <form onsubmit="saveSchoolSettings(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Nama Sekolah</label>
+                <input type="text" id="setting-school-name" placeholder="Cth: SK Pelangai" required class="w-full bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:border-indigo-600 transition">
+            </div>
 
-                    <!-- Senarai & Padam Rekod Murid -->
-                    <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4">
-                            <div>
-                                <h3 class="text-sm font-extrabold text-slate-900">Pengurusan & Padam Rekod Murid</h3>
-                                <p class="text-xs text-slate-600 font-semibold">Tapis mengikut kelas atau cari nama murid untuk membuat semakan data.</p>
-                            </div>
-                            
-                            <!-- TAPISAN KELAS & CARIAN NAMA -->
-                            <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-                                <select id="admin-filter-class" onchange="filterAdminStudents()" class="bg-slate-50 border border-slate-300 px-3 py-2 rounded-xl text-xs text-slate-900 font-extrabold focus:outline-none focus:border-amber-600 focus:bg-white transition">
-                                    <option value="">Semua Kelas</option>
-                                </select>
-                                <input type="text" id="admin-search-name" onkeyup="filterAdminStudents()" placeholder="Cari nama murid..." class="bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-amber-600 focus:bg-white transition w-full sm:w-48">
-                            </div>
-                        </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Kod Sekolah</label>
+                <input type="text" id="setting-school-code" placeholder="Cth: CBA0001" required class="w-full bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:border-indigo-600 transition">
+            </div>
 
-                        <div class="overflow-x-auto border border-slate-200 rounded-2xl">
-                            <table class="w-full text-left text-xs">
-                                <thead>
-                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-extrabold uppercase tracking-wider">
-                                        <th class="p-3">Nama Murid (A-Z)</th>
-                                        <th class="p-3">No. KP</th>
-                                        <th class="p-3">Kelas</th>
-                                        <th class="p-3 text-right">Tindakan</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-delete-rows" class="divide-y divide-slate-200"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Nama Zon / Daerah</label>
+                <input type="text" id="setting-school-zone" placeholder="Cth: ZON PELANGAI" required class="w-full bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:border-indigo-600 transition">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Nama Penyelaras PSS</label>
+                <input type="text" id="setting-coordinator-name" placeholder="Cth: Cikgu Ahmad" class="w-full bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:border-indigo-600 transition">
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 mb-1">Pautan Logo / Lencana Sekolah (URL)</label>
+                <input type="url" id="setting-school-logo" placeholder="https://contoh.com/lencana.png" class="w-full bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:border-indigo-600 transition">
+            </div>
+
+            <button type="submit" class="md:col-span-2 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold py-2.5 rounded-xl text-xs transition shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2">
+                <i data-lucide="save" class="w-4 h-4"></i> Simpan Tetapan Profil
+            </button>
+        </form>
+    </div>
+
+    <!-- 2. IMPORT DATA INDUK APDM / idME -->
+    <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
+        <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+            <i data-lucide="upload-cloud" class="w-5 h-5 text-indigo-600"></i> Import Data Induk APDM / idME (Excel .xls/.xlsx atau .csv)
+        </h2>
+        <p class="text-xs text-slate-600 font-semibold">Muat naik fail Excel terus dari APDM/idME. Sistem mengira tahun kelas semasa murid secara automatik mengikut tahun lahir No. KP.</p>
+
+        <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center bg-slate-50 space-y-3">
+            <i data-lucide="file-spreadsheet" class="w-10 h-10 text-slate-400 mx-auto"></i>
+            <input type="file" id="excel-file-input" accept=".xls,.xlsx,.csv" class="hidden" onchange="handleExcelImport(event)">
+            <div>
+                <button onclick="document.getElementById('excel-file-input').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-extrabold transition shadow-md shadow-indigo-600/20">
+                    Pilih Fail Excel / CSV APDM
+                </button>
+            </div>
+            <p class="text-[11px] text-slate-500 font-semibold">Menyokong fail Excel APDM seperti <b>data murid.xls</b> terus tanpa perlu menukar format.</p>
+        </div>
+    </div>
+
+    <!-- 3. TAMBAH MURID MANUAL -->
+    <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
+        <h3 class="text-sm font-extrabold text-slate-900">Tambah Murid Induk (Manual)</h3>
+        <form onsubmit="handleManualStudentAdd(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input type="text" id="add-name" required placeholder="Nama Murid" class="bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs text-slate-900 font-bold focus:bg-white focus:border-indigo-600 transition">
+            <input type="text" id="add-ic" required placeholder="No. KP (Tanpa -)" class="bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs text-slate-900 font-bold focus:bg-white focus:border-indigo-600 transition">
+            <input type="text" id="add-class" required placeholder="Nama Kelas (Cth: AZKIYA)" class="bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs text-slate-900 font-bold focus:bg-white focus:border-indigo-600 transition">
+            <button type="submit" class="md:col-span-3 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold py-2.5 rounded-xl text-xs transition shadow-md shadow-indigo-600/20">
+                + Simpan Rekod Murid Manual
+            </button>
+        </form>
+    </div>
+
+    <!-- 4. SENARAI & PADAM REKOD MURID -->
+    <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4">
+            <div>
+                <h3 class="text-sm font-extrabold text-slate-900">Pengurusan & Padam Rekod Murid</h3>
+                <p class="text-xs text-slate-600 font-semibold">Tapis mengikut kelas atau cari nama murid untuk membuat semakan data.</p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <select id="admin-filter-class" onchange="filterAdminStudents()" class="bg-slate-50 border border-slate-300 px-3 py-2 rounded-xl text-xs text-slate-900 font-extrabold focus:outline-none focus:border-amber-600 focus:bg-white transition">
+                    <option value="">Semua Kelas</option>
+                </select>
+                <input type="text" id="admin-search-name" onkeyup="filterAdminStudents()" placeholder="Cari nama murid..." class="bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-amber-600 focus:bg-white transition w-full sm:w-48">
+            </div>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-extrabold uppercase tracking-wider">
+                        <th class="p-3">Nama Murid (A-Z)</th>
+                        <th class="p-3">No. KP</th>
+                        <th class="p-3">Kelas</th>
+                        <th class="p-3 text-right">Tindakan</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-delete-rows" class="divide-y divide-slate-200"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
             </section>
         </main>
     </div>
@@ -725,30 +780,74 @@
             loadMasterStudents();
             initCharts();
             startLiveClock();
+	    loadSchoolSettings(); // << TAMBAH DI SINI
         });
 
 
+// FUNGSI KUNCUP / KEMBANG SIDEBAR DESKTOP (KEMASKINI CENTERING FOOTER)
+function toggleDesktopSidebar() {
+    const sidebar = document.getElementById('sidebar-menu');
+    const sidebarHeader = document.getElementById('sidebar-header');
+    const sidebarFooter = document.getElementById('sidebar-footer');
+    const footerMainInfo = document.getElementById('footer-main-info');
+    const footerStatusBar = document.getElementById('footer-status-bar');
+    const icon = document.getElementById('collapse-icon');
+    const textElements = document.querySelectorAll('.sidebar-text');
 
-// FUNGSI KUNCUP / KEMBANG SIDEBAR DESKTOP
-        function toggleDesktopSidebar() {
-            const sidebar = document.getElementById('sidebar-menu');
-            const icon = document.getElementById('collapse-icon');
-            const textElements = document.querySelectorAll('.sidebar-text');
+    if (sidebar.classList.contains('w-64')) {
+        // KUNCUPKAN SIDEBAR (Menjadi w-20)
+        sidebar.classList.remove('w-64');
+        sidebar.classList.add('w-20');
 
-            if (sidebar.classList.contains('w-64')) {
-                // KUNCUPKAN SIDEBAR (Menjadi w-20)
-                sidebar.classList.remove('w-64');
-                sidebar.classList.add('w-20');
-                if (icon) icon.style.transform = 'rotate(180deg)';
-                textElements.forEach(el => el.classList.add('hidden'));
-            } else {
-                // KEMBANGKAN SIDEBAR (Menjadi w-64)
-                sidebar.classList.remove('w-20');
-                sidebar.classList.add('w-64');
-                if (icon) icon.style.transform = 'rotate(0deg)';
-                textElements.forEach(el => el.classList.remove('hidden'));
-            }
+        // Centerkan Header Logo
+        if (sidebarHeader) {
+            sidebarHeader.classList.remove('p-4', 'justify-between');
+            sidebarHeader.classList.add('p-3', 'justify-center');
         }
+
+        // Centerkan Footer & Lencana Sekolah
+        if (sidebarFooter) {
+            sidebarFooter.classList.remove('m-3', 'p-3.5');
+            sidebarFooter.classList.add('m-2', 'p-2', 'flex', 'flex-col', 'items-center', 'justify-center');
+        }
+        if (footerMainInfo) {
+            footerMainInfo.classList.remove('border-b', 'pb-2.5', 'w-full');
+            footerMainInfo.classList.add('border-b-0', 'pb-0', 'justify-center');
+        }
+        if (footerStatusBar) {
+            footerStatusBar.classList.add('hidden');
+        }
+
+        if (icon) icon.style.transform = 'rotate(180deg)';
+        textElements.forEach(el => el.classList.add('hidden'));
+    } else {
+        // KEMBANGKAN SIDEBAR (Menjadi w-64)
+        sidebar.classList.remove('w-20');
+        sidebar.classList.add('w-64');
+
+        // Kembalikan Header
+        if (sidebarHeader) {
+            sidebarHeader.classList.remove('p-3', 'justify-center');
+            sidebarHeader.classList.add('p-4', 'justify-between');
+        }
+
+        // Kembalikan Footer asal
+        if (sidebarFooter) {
+            sidebarFooter.classList.remove('m-2', 'p-2', 'flex', 'flex-col', 'items-center', 'justify-center');
+            sidebarFooter.classList.add('m-3', 'p-3.5');
+        }
+        if (footerMainInfo) {
+            footerMainInfo.classList.remove('border-b-0', 'pb-0', 'justify-center');
+            footerMainInfo.classList.add('border-b', 'pb-2.5', 'w-full');
+        }
+        if (footerStatusBar) {
+            footerStatusBar.classList.remove('hidden');
+        }
+
+        if (icon) icon.style.transform = 'rotate(0deg)';
+        textElements.forEach(el => el.classList.remove('hidden'));
+    }
+}
 
 
 function toggleMobileSidebar(forceState = null) {
@@ -820,6 +919,126 @@ function toggleMobileSidebar(forceState = null) {
                 }
             });
         }
+
+	// ==================== FUNGSI TETAPAN SEKOLAH (SUPABASE & LOCALSTORAGE) ====================
+
+// SIMPAN TETAPAN KE SUPABASE & LOCALSTORAGE (DIKEMASKINI DENGAN ID: 1)
+async function saveSchoolSettings(e) {
+    e.preventDefault();
+
+    const schoolSettings = {
+        id: 1, // Wajib ada ID: 1 supaya Supabase tahu untuk UPDATE baris wujud
+        name: document.getElementById('setting-school-name').value.trim(),
+        code: document.getElementById('setting-school-code').value.trim(),
+        zone: document.getElementById('setting-school-zone').value.trim(),
+        coordinator: document.getElementById('setting-coordinator-name').value.trim(),
+        logo: document.getElementById('setting-school-logo').value.trim()
+    };
+
+    // 1. Simpan ke LocalStorage komputer
+    localStorage.setItem('pss_school_settings', JSON.stringify(schoolSettings));
+
+    // 2. Simpan & Kemaskini ke Supabase Cloud
+    try {
+        const { data, error } = await supabaseClient
+            .from('app_settings')
+            .upsert([schoolSettings], { onConflict: 'id' });
+
+        if (error) {
+            console.error("Ralat Supabase:", error);
+            alert("Ralat Supabase: " + error.message);
+        } else {
+            alert('Berjaya! Tetapan profil sekolah telah dikemaskini terus ke Cloud Supabase.');
+        }
+    } catch(err) {
+        console.error("Ralat sistem:", err);
+        alert('Tetapan disimpan secara tempatan.');
+    }
+
+    applySchoolSettings(schoolSettings);
+}
+
+// 2. MEMUAT TETAPAN DARI SUPABASE (CLOUD SYNC) ATAU LOCALSTORAGE
+async function loadSchoolSettings() {
+    // A. Ambil dari LocalStorage dahulu untuk paparan pantas
+    const saved = localStorage.getItem('pss_school_settings');
+    if (saved) {
+        const config = JSON.parse(saved);
+        populateSettingForm(config);
+        applySchoolSettings(config);
+    }
+
+    // B. Ambil data terkini dari pangkalan data Supabase
+    try {
+        const { data, error } = await supabaseClient.from('app_settings').select('*').eq('id', 1).single();
+        if (data && !error) {
+            const config = {
+                name: data.name,
+                code: data.code,
+                zone: data.zone,
+                coordinator: data.coordinator,
+                logo: data.logo
+            };
+            localStorage.setItem('pss_school_settings', JSON.stringify(config));
+            populateSettingForm(config);
+            applySchoolSettings(config);
+        }
+    } catch (err) {
+        console.log("Menggunakan tetapan tempatan.");
+    }
+}
+
+// 3. ISIKAN BORANG TETAPAN INPUTCAPTION
+function populateSettingForm(config) {
+    if(document.getElementById('setting-school-name')) document.getElementById('setting-school-name').value = config.name || 'SK Pelangai';
+    if(document.getElementById('setting-school-code')) document.getElementById('setting-school-code').value = config.code || 'CBA0001';
+    if(document.getElementById('setting-school-zone')) document.getElementById('setting-school-zone').value = config.zone || 'ZON PELANGAI';
+    if(document.getElementById('setting-coordinator-name')) document.getElementById('setting-coordinator-name').value = config.coordinator || '';
+    if(document.getElementById('setting-school-logo')) document.getElementById('setting-school-logo').value = config.logo || '';
+}
+
+// TERAPKAN KEMASKINI TEKS & LENCANA KE PAPARAN UI
+function applySchoolSettings(config) {
+    if (!config) return;
+
+    // 1. Nama Sekolah
+    if (config.name) {
+        const schoolNameEl = document.getElementById('footer-school-name');
+        if(schoolNameEl) schoolNameEl.innerText = config.name;
+        window.SCHOOL_NAME = config.name;
+    }
+
+    // 2. Kod Sekolah
+    if (config.code) {
+        const schoolCodeEl = document.getElementById('footer-school-code');
+        if(schoolCodeEl) schoolCodeEl.innerText = `KOD: ${config.code}`;
+    }
+
+    // 3. Zon / Daerah
+    if (config.zone) {
+        const schoolZoneEl = document.getElementById('header-school-zone');
+        if(schoolZoneEl) schoolZoneEl.innerText = config.zone;
+    }
+
+    // 4. Lencana Sekolah Pada Card Footer Sidebar
+    if (config.logo && config.logo.trim() !== '') {
+        const footerLogoImg = document.getElementById('footer-school-logo');
+        const footerDefaultIcon = document.getElementById('footer-default-icon');
+        const footerLogoContainer = document.getElementById('footer-logo-container');
+
+        if (footerLogoImg && footerDefaultIcon) {
+            footerLogoImg.src = config.logo;
+            footerLogoImg.classList.remove('hidden');
+            footerDefaultIcon.classList.add('hidden');
+            
+            if (footerLogoContainer) {
+                footerLogoContainer.classList.remove('bg-amber-400/10');
+                footerLogoContainer.classList.add('bg-white');
+            }
+        }
+        window.SCHOOL_LOGO = config.logo;
+    }
+}
 
         // FUNGSI SUPABASE REALTIME: AUTOMATIK LOMPAT SERTA-MERTA PADA PC
         function initSupabaseRealtime() {
@@ -1013,7 +1232,7 @@ function toggleMobileSidebar(forceState = null) {
             generateAndPrintSelectedCards();
         }
 
-      function generateAndPrintSelectedCards() {
+    function generateAndPrintSelectedCards() {
     if (selectedMembersForPrint.size === 0) {
         alert('Sila tandakan (tick) sekurang-kurangnya seorang ahli untuk dicetak.');
         return;
@@ -1022,19 +1241,38 @@ function toggleMobileSidebar(forceState = null) {
     const container = document.getElementById('printable-cards-container');
     container.innerHTML = '';
 
-    const schoolName = window.SCHOOL_NAME || "PSS DIGITAL ZON PELANGAI";
+    // Ambil nama sekolah dinamik dari elemen footer/header atau pembolehubah global
+    const schoolName = document.getElementById('footer-school-name')?.innerText || window.SCHOOL_NAME || "SK PELANGAI";
     const selectedList = masterStudents.filter(s => selectedMembersForPrint.has(s.ic_number));
 
     selectedList.forEach(s => {
         const card = document.createElement('div');
-        // Menggunakan gaya kad menegak baharu
+        // Kad menegak dengan ruang tebuk lubang lanyard di bahagian atas
         card.className = "rfid-card-vertical border-2 border-blue-900 rounded-2xl bg-white flex flex-col justify-between items-center text-center overflow-hidden shadow-sm";
         
         card.innerHTML = `
-            <!-- HEADER KAD BIRU KORPORAT -->
-            <div class="bg-blue-900 text-white w-full py-2 px-1 flex flex-col justify-center items-center shrink-0 border-b-2 border-amber-400">
-                <span class="text-[8px] font-extrabold uppercase tracking-wider text-amber-300 leading-tight">${schoolName}</span>
-                <h4 class="text-[10px] font-black uppercase tracking-wide leading-tight mt-0.5">KAD AHLI SAHABAT PSS</h4>
+            <!-- HEADER KAD BIRU KORPORAT (DENGAN RUANG TEBUK LUBANG LANYARD) -->
+            <div class="bg-blue-900 text-white w-full pt-4 pb-2 px-1 flex flex-col justify-center items-center shrink-0 border-b-2 border-amber-400 relative">
+                
+                <!-- Panduan Indikator Tebuk Lubang Lanyard (Bulatan Putus-Putus Kecil) -->
+                <div class="absolute top-1 left-1/2 transform -translate-x-1/2 w-3.5 h-3.5 border border-dashed border-amber-300/60 rounded-full flex items-center justify-center">
+                    <div class="w-1 h-1 bg-amber-300/40 rounded-full"></div>
+                </div>
+
+                <!-- 1. BARIS ATAS: PSS DIGITAL -->
+                <span class="text-[9px] font-extrabold uppercase tracking-widest text-white leading-tight mt-1">
+                    PSS DIGITAL
+                </span>
+
+                <!-- 2. BARIS TENGAH: NAMA SEKOLAH DINAMIK -->
+                <span class="text-[8px] font-extrabold uppercase tracking-wider text-amber-300 leading-tight mt-0.5">
+                    ${schoolName}
+                </span>
+
+                <!-- 3. BARIS BAWAH: KAD AHLI SAHABAT PSS -->
+                <h4 class="text-[9.5px] font-black uppercase tracking-wide text-white leading-tight mt-0.5">
+                    KAD AHLI SAHABAT PSS
+                </h4>
             </div>
 
             <!-- BADAN UTAMA (QR CODE DI TENGAH) -->
@@ -1061,15 +1299,15 @@ function toggleMobileSidebar(forceState = null) {
 
         container.appendChild(card);
 
-        // Jana QR Code menggunakan pustaka QRCode.js sedia ada
+        // Jana QR Code menggunakan pustaka QRCode.js
         setTimeout(() => {
             const qrElement = document.getElementById(`qrcode-${s.ic_number}`);
             if (qrElement) {
-                qrElement.innerHTML = ''; // Buka petak bersih
+                qrElement.innerHTML = ''; 
                 new QRCode(qrElement, {
                     text: s.ic_number,
-                    width: 95,
-                    height: 95
+                    width: 90,
+                    height: 90
                 });
             }
         }, 80);
