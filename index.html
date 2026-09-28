@@ -566,37 +566,76 @@
                 </div>
             </section>
 
-        <!-- TAB 4: MOD PENGAWAS - DAFTAR AHLI BAHARU (TEMA CERAH) -->
-            <section id="content-daftar-ahli" class="hidden space-y-6">
-                <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
-                    <div>
-                        <h2 class="text-lg font-extrabold text-slate-900">Daftar Ahli Sahabat PSS Baharu</h2>
-                        <p class="text-xs text-slate-600 font-semibold mt-0.5">Cari nama murid dari rekod sekolah APDM dan klik "Daftar Ahli".</p>
-                    </div>
+       <!-- TAB 4: MOD PENGAWAS - DAFTAR AHLI BAHARU (SISTEM PUKAL) -->
+<section id="content-daftar-ahli" class="hidden space-y-6">
+    <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-200 pb-4">
+            <div>
+                <h2 class="text-lg font-extrabold text-slate-900">Daftar Ahli Sahabat PSS Baharu</h2>
+                <p class="text-xs text-slate-600 font-semibold mt-0.5">Tandakan (tick) nama murid atau gunakan carian kelas untuk mendaftar ahli secara pukal.</p>
+            </div>
+            
+           <!-- BUTANG-BUTANG PENDAFTARAN PUKAL -->
+<div class="flex items-center gap-2">
+    <button onclick="toggleSelectAllBulk(true)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm">
+        Pilih Semua
+    </button>
+    <button onclick="toggleSelectAllBulk(false)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm">
+        Nyahpilih
+    </button>
+    <button onclick="handleBulkRegister()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md shadow-emerald-600/20">
+        <i data-lucide="user-plus" class="w-4 h-4"></i> Daftar Pukal (<span id="bulk-register-count">0</span>)
+    </button>
+    <!-- BUTANG BATAL SEMUA AHLI -->
+    <button onclick="handleBulkUnregister()" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-rose-600/20">
+        <i data-lucide="user-x" class="w-4 h-4"></i> Batal Semua
+    </button>
+</div>
+        </div>
 
-                    <input type="text" id="search-student-input" onkeyup="searchMasterStudents()" placeholder="Cari Nama, No. KP, atau Kelas..." class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white transition">
+        <!-- BAR CARIAN & TAPISAN KELAS -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+            <div class="md:col-span-8">
+                <input type="text" id="search-student-input" onkeyup="searchMasterStudents()" placeholder="Cari Nama, No. KP, atau Kelas..." class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white transition">
+            </div>
+            <div class="md:col-span-4">
+                <select id="bulk-class-dropdown" onchange="searchMasterStudents()" class="w-full bg-slate-50 border border-slate-300 px-3 py-2.5 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white transition">
+                    <option value="">Semua Kelas</option>
+                    <option value="1">Tahun 1</option>
+                    <option value="2">Tahun 2</option>
+                    <option value="3">Tahun 3</option>
+                    <option value="4">Tahun 4</option>
+                    <option value="5">Tahun 5</option>
+                    <option value="6">Tahun 6</option>
+                </select>
+            </div>
+        </div>
 
-                    <div class="overflow-x-auto border border-slate-200 rounded-2xl">
-                        <table class="w-full text-left text-xs">
-                            <thead>
-                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-extrabold uppercase tracking-wider">
-                                    <th class="p-3">Nama Murid</th>
-                                    <th class="p-3">No. KP</th>
-                                    <th class="p-3">Kelas Singkat</th>
-                                    <th class="p-3">Jantina</th>
-                                    <th class="p-3">Status Ahli PSS</th>
-                                    <th class="p-3 text-right">Tindakan</th>
-                                </tr>
-                            </thead>
-                            <tbody id="master-student-rows" class="divide-y divide-slate-200">
-                                <tr>
-                                    <td colspan="6" class="text-center py-8 text-slate-500 italic font-semibold">Tiada rekod murid. Sila import data APDM di Panel Penyelaras.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
+        <!-- JADUAL MURID DENGAN CHECKBOX -->
+        <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-extrabold uppercase tracking-wider">
+                        <th class="p-3 w-12 text-center">
+                            <input type="checkbox" id="master-bulk-checkbox" onchange="toggleSelectAllBulk(this.checked)" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
+                        </th>
+                        <th class="p-3">Nama Murid</th>
+                        <th class="p-3">No. KP</th>
+                        <th class="p-3">Kelas Singkat</th>
+                        <th class="p-3">Jantina</th>
+                        <th class="p-3">Status Ahli PSS</th>
+                        <th class="p-3 text-right">Tindakan Induk</th>
+                    </tr>
+                </thead>
+                <tbody id="master-student-rows" class="divide-y divide-slate-200">
+                    <tr>
+                        <td colspan="7" class="text-center py-8 text-slate-500 italic font-semibold">Tiada rekod murid. Sila import data APDM di Panel Penyelaras.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
           <!-- TAB 5: MOD PENYELARAS (ADMIN - TEMA CERAH) -->
             <section id="content-admin" class="hidden space-y-6">
@@ -774,15 +813,19 @@
         let masterStudents = [];
         let selectedMembersForPrint = new Set();
 
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            initSupabaseRealtime();
-            loadMasterStudents();
-            initCharts();
-            startLiveClock();
-	    loadSchoolSettings(); // << TAMBAH DI SINI
-        });
+       document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+    initSupabaseRealtime();
+    
+    // Baca tab terakhir dari localStorage (default ke 'dashboard' jika tiada)
+    const savedTab = localStorage.getItem('active_pss_tab') || 'dashboard';
+    switchTab(savedTab);
 
+    loadMasterStudents();
+    initCharts();
+    startLiveClock();
+    loadSchoolSettings();
+});
 
 // FUNGSI KUNCUP / KEMBANG SIDEBAR DESKTOP (KEMASKINI CENTERING FOOTER)
 function toggleDesktopSidebar() {
@@ -1117,17 +1160,26 @@ function applySchoolSettings(config) {
             document.getElementById('stat-total-members').innerText = membersCount;
         }
 
-      function renderMasterTable(students) {
+    let selectedStudentsForBulk = new Set();
+
+        // 1. FUNGSI RENDER JADUAL MURID INDUK (DENGAN CHECKBOX DAFTAR PUKAL)
+        function renderMasterTable(students) {
             const tbody = document.getElementById('master-student-rows');
             if(!tbody) return;
 
             if(students.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-500 italic font-semibold">Tiada data murid. Sila import data di Panel Penyelaras.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500 italic font-semibold">Tiada data murid dijumpai.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = students.map(s => `
                 <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3 text-center">
+                        ${!s.is_member ? 
+                            `<input type="checkbox" class="bulk-select-checkbox w-4 h-4 accent-indigo-600 rounded cursor-pointer" value="${s.ic_number}" ${selectedStudentsForBulk.has(s.ic_number) ? 'checked' : ''} onchange="toggleBulkSelection('${s.ic_number}', this.checked)">` : 
+                            `<input type="checkbox" disabled class="w-4 h-4 opacity-30 cursor-not-allowed">`
+                        }
+                    </td>
                     <td class="p-3 font-bold text-slate-900">${s.full_name}</td>
                     <td class="p-3 text-slate-600 font-mono font-semibold">${s.ic_number}</td>
                     <td class="p-3 font-extrabold text-indigo-700">${s.short_class}</td>
@@ -1145,8 +1197,69 @@ function applySchoolSettings(config) {
                     </td>
                 </tr>
             `).join('');
+
+            updateBulkCountBadge();
         }
-       function renderMembersTableOnly(customMembersList = null) {
+
+        // 2. FUNGSI LOGIK CHECKBOX & PENDAFTARAN PUKAL
+        function toggleBulkSelection(icNumber, isChecked) {
+            if(isChecked) {
+                selectedStudentsForBulk.add(icNumber);
+            } else {
+                selectedStudentsForBulk.delete(icNumber);
+            }
+            updateBulkCountBadge();
+        }
+
+        function toggleSelectAllBulk(selectAll) {
+            const checkboxes = document.querySelectorAll('.bulk-select-checkbox');
+            const masterCb = document.getElementById('master-bulk-checkbox');
+            if(masterCb) masterCb.checked = selectAll;
+
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll;
+                if(selectAll) {
+                    selectedStudentsForBulk.add(cb.value);
+                } else {
+                    selectedStudentsForBulk.delete(cb.value);
+                }
+            });
+            updateBulkCountBadge();
+        }
+
+        function updateBulkCountBadge() {
+            const badge = document.getElementById('bulk-register-count');
+            if(badge) badge.innerText = selectedStudentsForBulk.size;
+        }
+
+        async function handleBulkRegister() {
+            if (selectedStudentsForBulk.size === 0) {
+                alert('Sila tandakan (tick) sekurang-kurangnya seorang murid bukan ahli untuk didaftarkan.');
+                return;
+            }
+
+            const icList = Array.from(selectedStudentsForBulk);
+            
+            if (confirm(`Adakah anda pasti mahu mendaftarkan ${icList.length} orang murid yang dipilih sebagai Ahli Sahabat PSS?`)) {
+                const { error } = await supabaseClient
+                    .from('master_students')
+                    .update({ is_member: true })
+                    .in('ic_number', icList);
+
+                if (error) {
+                    alert("Ralat semasa pendaftaran pukal: " + error.message);
+                } else {
+                    alert(`Berjaya mendaftarkan ${icList.length} orang ahli Sahabat PSS baharu!`);
+                    selectedStudentsForBulk.clear();
+                    const masterCb = document.getElementById('master-bulk-checkbox');
+                    if(masterCb) masterCb.checked = false;
+                    loadMasterStudents();
+                }
+            }
+        }
+
+        // 3. FUNGSI RENDER JADUAL AHLI SAHABAT PSS (CETAKAN QR)
+        function renderMembersTableOnly(customMembersList = null) {
             const tbody = document.getElementById('member-table-rows');
             const members = customMembersList || masterStudents.filter(s => s.is_member);
 
@@ -1224,6 +1337,23 @@ function applySchoolSettings(config) {
             const badge = document.getElementById('selected-count-badge');
             if(badge) badge.innerText = selectedMembersForPrint.size;
         }
+
+     // FUNGSI BATAL PENDAFTARAN AHLI SECARA PUKAL
+async function handleBulkUnregister() {
+    if (confirm("Adakah anda pasti mahu membatalkan pendaftaran SEMUA murid daripada menjadi Ahli Sahabat PSS?")) {
+        const { error } = await supabaseClient
+            .from('master_students')
+            .update({ is_member: false })
+            .eq('is_member', true);
+
+        if (error) {
+            alert("Ralat semasa membatalkan pendaftaran: " + error.message);
+        } else {
+            alert("Berjaya! Semua murid telah dikembalikan kepada status BUKAN AHLI.");
+            loadMasterStudents();
+        }
+    }
+}
 
         function printSingleCard(icNumber) {
             selectedMembersForPrint.clear();
@@ -1378,16 +1508,44 @@ function filterAdminStudents() {
             }
         }
 
-        function searchMasterStudents() {
-            const q = document.getElementById('search-student-input').value.toLowerCase();
-            const filtered = masterStudents.filter(s => 
-                s.full_name.toLowerCase().includes(q) || 
-                s.ic_number.includes(q) || 
-                s.full_class.toLowerCase().includes(q) ||
-                s.short_class.toLowerCase().includes(q)
-            );
-            renderMasterTable(filtered);
+       // FUNGSI CARIAN & TAPISAN KELAS UNTUK PENDAFTARAN PUKAL
+function searchMasterStudents() {
+    const textQuery = document.getElementById('search-student-input').value.toLowerCase().trim();
+    const yearQuery = document.getElementById('bulk-class-dropdown') ? document.getElementById('bulk-class-dropdown').value : '';
+
+    const filtered = masterStudents.filter(s => {
+        // 1. Semak Tapisan Tahun (Dropdown)
+        let matchesYear = true;
+        if (yearQuery) {
+            const shortClass = (s.short_class || '').toString().toLowerCase();
+            const fullClass = (s.full_class || '').toString().toLowerCase();
+            
+            // Semak sama ada kelas bermula dengan nombor tahun (cth: "5", "5A", "5 ARIF")
+            // atau mengandungi teks "tahun 5"
+            matchesYear = shortClass.startsWith(yearQuery.toLowerCase()) || 
+                          fullClass.includes(`tahun ${yearQuery.toLowerCase()}`) ||
+                          fullClass.startsWith(yearQuery.toLowerCase());
         }
+
+        // 2. Semak Tapisan Teks Carian (Input)
+        let matchesText = true;
+        if (textQuery) {
+            const name = (s.full_name || '').toLowerCase();
+            const ic = (s.ic_number || '').toString();
+            const sClass = (s.short_class || '').toLowerCase();
+            const fClass = (s.full_class || '').toLowerCase();
+
+            matchesText = name.includes(textQuery) || 
+                          ic.includes(textQuery) || 
+                          sClass.includes(textQuery) || 
+                          fClass.includes(textQuery);
+        }
+
+        return matchesYear && matchesText;
+    });
+
+    renderMasterTable(filtered);
+}
 
         async function toggleMembership(icNumber, status) {
             await supabaseClient.from('master_students').update({ is_member: status }).eq('ic_number', icNumber);
@@ -1610,55 +1768,56 @@ function closeSearchModal() {
     loadMasterStudents();
 }
  // FUNGSI SWITCH TAB DIKEMASKINI DENGAN SOKONGAN MOBILE NAV & SIDEBAR RESPONSIVE
-        function switchTab(tab) {
-            const tabs = ['dashboard', 'sahabat', 'kaunter', 'daftar-ahli', 'admin'];
-            
-            tabs.forEach(t => {
-                // Sembunyikan kandungan & reset Desktop Nav
-                const contentEl = document.getElementById(`content-${t}`);
-                if(contentEl) contentEl.classList.add('hidden');
+function switchTab(tab) {
+    const tabs = ['dashboard', 'sahabat', 'kaunter', 'daftar-ahli', 'admin'];
+    
+    tabs.forEach(t => {
+        // Sembunyikan kandungan & reset Desktop Nav
+        const contentEl = document.getElementById(`content-${t}`);
+        if(contentEl) contentEl.classList.add('hidden');
 
-                const nav = document.getElementById(`nav-${t}`);
-                if(nav) {
-                    nav.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition font-semibold";
-                }
-                
-                // Reset Mobile Nav
-                const mNav = document.getElementById(`mobile-nav-${t}`);
-                if(mNav) mNav.className = "flex flex-col items-center gap-1 text-slate-500 p-1";
-            });
-
-            // Tunjukkan kandungan aktif
-            const activeContent = document.getElementById(`content-${tab}`);
-            if(activeContent) activeContent.classList.remove('hidden');
-            
-            // Highlight Desktop Nav
-            const activeNav = document.getElementById(`nav-${tab}`);
-            if(activeNav) {
-                if(tab === 'admin') {
-                    activeNav.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 font-extrabold shadow-sm";
-                } else {
-                    activeNav.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/20 font-extrabold transition";
-                }
-            }
-
-            // Highlight Mobile Nav
-            const activeMobileNav = document.getElementById(`mobile-nav-${tab}`);
-            if(activeMobileNav) {
-                if(tab === 'admin') {
-                    activeMobileNav.className = "flex flex-col items-center gap-1 text-amber-600 font-extrabold p-1";
-                } else {
-                    activeMobileNav.className = "flex flex-col items-center gap-1 text-indigo-600 font-extrabold p-1";
-                }
-            }
-
-            // Tutup sidebar mobile secara automatik selepas tab dipilih
-            if (typeof toggleMobileSidebar === 'function') {
-                toggleMobileSidebar(false);
-            }
-       
+        const nav = document.getElementById(`nav-${t}`);
+        if(nav) {
+            nav.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition font-semibold";
         }
+        
+        // Reset Mobile Nav
+        const mNav = document.getElementById(`mobile-nav-${t}`);
+        if(mNav) mNav.className = "flex flex-col items-center gap-1 text-slate-500 p-1";
+    });
 
+    // Tunjukkan kandungan aktif
+    const activeContent = document.getElementById(`content-${tab}`);
+    if(activeContent) activeContent.classList.remove('hidden');
+    
+    // Highlight Desktop Nav
+    const activeNav = document.getElementById(`nav-${tab}`);
+    if(activeNav) {
+        if(tab === 'admin') {
+            activeNav.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 font-extrabold shadow-sm";
+        } else {
+            activeNav.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/20 font-extrabold transition";
+        }
+    }
+
+    // Highlight Mobile Nav
+    const activeMobileNav = document.getElementById(`mobile-nav-${tab}`);
+    if(activeMobileNav) {
+        if(tab === 'admin') {
+            activeMobileNav.className = "flex flex-col items-center gap-1 text-amber-600 font-extrabold p-1";
+        } else {
+            activeMobileNav.className = "flex flex-col items-center gap-1 text-indigo-600 font-extrabold p-1";
+        }
+    }
+
+    // Tutup sidebar mobile secara automatik selepas tab dipilih
+    if (typeof toggleMobileSidebar === 'function') {
+        toggleMobileSidebar(false);
+    }
+
+    // SIMPAN TAB TERAKHIR DALAM LOCALSTORAGE
+    localStorage.setItem('active_pss_tab', tab);
+}
         function resetKaunter() {
             currentStudentIC = null;
             document.getElementById('student-card-active').classList.add('hidden');
