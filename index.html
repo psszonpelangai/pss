@@ -376,196 +376,199 @@
                     <div id="printable-cards-container"></div>
                 </div>
             </section>
-         <!-- TAB 3: MOD PENGAWAS - KAUNTER PINJAMAN & PEMULANGAN BUKU (TEMA CERAH) -->
-            <section id="content-kaunter" class="hidden space-y-6">
+        	
+		<!-- TAB 3: MOD PENGAWAS - KAUNTER PINJAMAN & PEMULANGAN BUKU (TEMA CERAH) -->
+<section id="content-kaunter" class="hidden space-y-6">
 
-                <div id="kaunter-active-view" class="space-y-6">
-                    <!-- Bar Carian Murid -->
-                    <div class="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 bg-amber-50 text-amber-600 rounded-xl border border-amber-100">
-                                <i data-lucide="sparkles" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xs font-extrabold text-slate-900">Kaunter Imbasan & Carian Murid</h3>
-                                <p class="text-[11px] text-slate-600 font-semibold">Imbas QR atau cari guna <b class="text-indigo-600">Nama Murid</b>, <b class="text-indigo-600">Kelas</b>, atau <b class="text-indigo-600">No. KP</b>.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2 w-full md:w-auto">
-                            <input type="text" id="sim-ic-input" onkeypress="if(event.key==='Enter') searchOrScanStudent()" placeholder="Cari Nama, Kelas (Cth: 5N), atau No. KP..." class="bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white w-full md:w-80 transition">
-                            <button onclick="searchOrScanStudent()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow-md shadow-indigo-600/20">
-                                <i data-lucide="search" class="w-3.5 h-3.5"></i> Cari
-                            </button>
-                        </div>
+    <div id="kaunter-active-view" class="space-y-6">
+        <!-- 1. BAR CARIAN MURID -->
+        <div class="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-amber-50 text-amber-600 rounded-xl border border-amber-100">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-xs font-extrabold text-slate-900">Kaunter Imbasan & Carian Murid</h3>
+                    <p class="text-[11px] text-slate-600 font-semibold">Imbas QR atau cari guna <b class="text-indigo-600">Nama Murid</b>, <b class="text-indigo-600">Kelas</b>, atau <b class="text-indigo-600">No. KP</b>.</p>
+                </div>
+            </div>
+
+            <!-- INPUT CARIAN & BUTANG -->
+            <div class="flex gap-2 w-full md:w-auto">
+                <input type="text" id="sim-ic-input" onkeypress="if(event.key==='Enter') searchOrScanStudent()" placeholder="Cari Nama, Kelas (Cth: 5N), atau No. KP..." class="bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white w-full md:w-80 transition">
+                <button onclick="searchOrScanStudent()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow-md shadow-indigo-600/20">
+                    <i data-lucide="search" class="w-3.5 h-3.5"></i> Cari
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. MODAL SENARAI HASIL CARIAN NAMA / KELAS -->
+        <div id="modal-search-results" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white border border-slate-200 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+                
+                <!-- HEADER BIRU KORPORAT -->
+                <div class="bg-indigo-600 px-6 py-4 flex justify-between items-center text-white shrink-0">
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="users" class="w-5 h-5 text-indigo-200"></i>
+                        <h3 class="text-sm font-bold tracking-wide">Pilih Murid Dari Hasil Carian</h3>
                     </div>
+                    <button onclick="closeSearchModal()" class="text-indigo-100 hover:text-white hover:bg-indigo-700 text-xs font-bold px-3 py-1.5 rounded-lg transition">
+                        ✕ Tutup
+                    </button>
+                </div>
 
-                    <!-- MODAL SENARAI HASIL CARIAN NAMA / KELAS -->
-                    <div id="modal-search-results" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                        <div class="bg-white border border-slate-200 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
-                            
-                            <!-- HEADER BIRU KORPORAT -->
-                            <div class="bg-indigo-600 px-6 py-4 flex justify-between items-center text-white shrink-0">
-                                <div class="flex items-center gap-2.5">
-                                    <i data-lucide="users" class="w-5 h-5 text-indigo-200"></i>
-                                    <h3 class="text-sm font-bold tracking-wide">Pilih Murid Dari Hasil Carian</h3>
-                                </div>
-                                <button onclick="closeSearchModal()" class="text-indigo-100 hover:text-white hover:bg-indigo-700 text-xs font-bold px-3 py-1.5 rounded-lg transition">
-                                    ✕ Tutup
-                                </button>
-                            </div>
+                <!-- JADUAL HASIL CARIAN -->
+                <div class="p-6 overflow-y-auto grow">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-indigo-50 border-b-2 border-indigo-600 text-indigo-950 font-extrabold uppercase tracking-wider">
+                                <th class="p-3 rounded-l-xl">Nama Murid</th>
+                                <th class="p-3 text-center">Kelas</th>
+                                <th class="p-3 text-center">No. KP</th>
+                                <th class="p-3 text-right rounded-r-xl">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="search-modal-rows" class="divide-y divide-slate-200"></tbody>
+                    </table>
+                </div>
 
-                            <!-- JADUAL HASIL CARIAN -->
-                            <div class="p-6 overflow-y-auto grow">
-                                <table class="w-full text-left text-xs border-collapse">
-                                    <thead>
-                                        <tr class="bg-indigo-50 border-b-2 border-indigo-600 text-indigo-950 font-extrabold uppercase tracking-wider">
-                                            <th class="p-3 rounded-l-xl">Nama Murid</th>
-                                            <th class="p-3 text-center">Kelas</th>
-                                            <th class="p-3 text-center">No. KP</th>
-                                            <th class="p-3 text-right rounded-r-xl">Tindakan</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="search-modal-rows" class="divide-y divide-slate-200"></tbody>
-                                </table>
-                            </div>
+            </div>
+        </div>
 
-                        </div>
+        <!-- 3. PAPARAN KOSONG SEDIA IMBAS (BOLEH DIKLIK UTK FOKUS CARIAN/KAMERA) -->
+        <div id="student-card-empty" class="bg-white border border-slate-200 rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[420px] shadow-sm">
+            <button onclick="startMobileCameraScanner()" class="w-20 h-20 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-3xl border border-indigo-100 flex items-center justify-center mb-4 shadow-md transition duration-200 group cursor-pointer">
+                <i data-lucide="scan-line" class="w-10 h-10 group-hover:animate-pulse"></i>
+            </button>
+            <h3 class="text-lg font-extrabold text-slate-900">Sedia Untuk Imbasan Ahli</h3>
+            <p class="text-xs text-slate-600 font-semibold max-w-sm mt-1 leading-relaxed">
+                Imbas Kad QR Murid guna pemindai luaran ATAU <button onclick="startMobileCameraScanner()" class="text-indigo-600 font-extrabold underline hover:text-indigo-800 cursor-pointer">Klik Di Sini Untuk Fokus Carian / Kamera</button>.
+            </p>
+        </div>
+
+        <!-- 4. PAPARAN PROFIL & BORANG LENGKAP (DIPAPARKAN SELEPAS IMBAS/CARIAN) -->
+        <div id="student-card-active" class="hidden space-y-6">
+            
+            <!-- KAD PROFIL MURID -->
+            <div class="bg-white text-slate-900 rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-center gap-8 relative overflow-hidden">
+                <button onclick="resetKaunter()" class="absolute top-4 right-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1 border border-slate-300">
+                    <i data-lucide="x" class="w-4 h-4"></i> Selesai
+                </button>
+
+                <!-- Foto Murid / Avatar -->
+                <div class="w-28 h-36 bg-slate-50 border-4 border-indigo-600 rounded-2xl flex flex-col items-center justify-center overflow-hidden shrink-0 shadow-md">
+                    <i data-lucide="user" class="w-16 h-16 text-indigo-500"></i>
+                </div>
+
+                <!-- Maklumat Murid -->
+                <div class="space-y-2 text-sm font-bold text-slate-800 w-full md:w-auto">
+                    <div class="grid grid-cols-12 gap-2">
+                        <span class="col-span-4 text-slate-500">Nama Murid</span>
+                        <span class="col-span-1 text-center">:</span>
+                        <span class="col-span-7 font-black text-slate-900 text-base" id="disp-name">-</span>
                     </div>
-
-                    <div class="grid grid-cols-1 gap-6">
-                        <!-- PAPARAN KOSONG SEDIA IMBAS -->
-                        <div id="student-card-empty" class="bg-white border border-slate-200 rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[420px] shadow-sm">
-                            <div class="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl border border-indigo-100 flex items-center justify-center mb-4 shadow-md">
-                                <i data-lucide="scan-line" class="w-10 h-10"></i>
-                            </div>
-                            <h3 class="text-lg font-extrabold text-slate-900">Sedia Untuk Imbasan Ahli</h3>
-                            <p class="text-xs text-slate-600 font-semibold max-w-sm mt-1 leading-relaxed">Imbas Kad QR Murid dari telefon bimbit. Borang pinjaman atau pemulangan akan terbuka secara automatik.</p>
-                        </div>
-
-                        <!-- PAPARAN PROFIL & BORANG LENGKAP -->
-                        <div id="student-card-active" class="hidden space-y-6">
-                            
-                            <!-- 1. KAD PROFIL MURID -->
-                            <div class="bg-white text-slate-900 rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-center gap-8 relative overflow-hidden">
-                                <button onclick="resetKaunter()" class="absolute top-4 right-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1 border border-slate-300">
-                                    <i data-lucide="x" class="w-4 h-4"></i> Selesai
-                                </button>
-
-                                <!-- Foto Murid / Avatar -->
-                                <div class="w-28 h-36 bg-slate-50 border-4 border-indigo-600 rounded-2xl flex flex-col items-center justify-center overflow-hidden shrink-0 shadow-md">
-                                    <i data-lucide="user" class="w-16 h-16 text-indigo-500"></i>
-                                </div>
-
-                                <!-- Maklumat Murid -->
-                                <div class="space-y-2 text-sm font-bold text-slate-800 w-full md:w-auto">
-                                    <div class="grid grid-cols-12 gap-2">
-                                        <span class="col-span-4 text-slate-500">Nama Murid</span>
-                                        <span class="col-span-1 text-center">:</span>
-                                        <span class="col-span-7 font-black text-slate-900 text-base" id="disp-name">-</span>
-                                    </div>
-                                    <div class="grid grid-cols-12 gap-2">
-                                        <span class="col-span-4 text-slate-500">Kelas</span>
-                                        <span class="col-span-1 text-center">:</span>
-                                        <span class="col-span-7 font-black text-indigo-600" id="disp-class">-</span>
-                                    </div>
-                                    <div class="grid grid-cols-12 gap-2">
-                                        <span class="col-span-4 text-slate-500">No. IC</span>
-                                        <span class="col-span-1 text-center">:</span>
-                                        <span class="col-span-7 font-mono font-extrabold text-slate-700" id="disp-id">-</span>
-                                    </div>
-                                    <div class="grid grid-cols-12 gap-2">
-                                        <span class="col-span-4 text-slate-500">Jantina</span>
-                                        <span class="col-span-1 text-center">:</span>
-                                        <span class="col-span-7 font-extrabold text-slate-800" id="disp-gender">-</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 2. BUTANG NAVIGATION MOD PINJAMAN / PEMULANGAN -->
-                            <div class="flex bg-slate-200/80 p-1.5 rounded-2xl border border-slate-300">
-                                <button id="btn-tab-borrow" onclick="setFormTab('borrow')" class="flex-1 py-3 text-center font-extrabold text-xs rounded-xl bg-indigo-600 text-white shadow-md flex items-center justify-center gap-2 transition">
-                                    <i data-lucide="book-open" class="w-4 h-4"></i> Pinjaman Buku Baharu
-                                </button>
-                                <button id="btn-tab-return" onclick="setFormTab('return')" class="flex-1 py-3 text-center font-extrabold text-xs rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2 transition">
-                                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Pemulangan Buku
-                                </button>
-                            </div>
-
-                            <!-- 3. BORANG REKOD PINJAMAN BAHARU -->
-                            <div id="form-borrow" class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
-                                <h3 class="text-xs font-extrabold text-indigo-600 uppercase tracking-wider flex items-center gap-2">
-                                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Borang Rekod Pinjaman Buku
-                                </h3>
-                                <form onsubmit="handleBorrow(event)" class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                                    <div class="md:col-span-7">
-                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Tajuk Buku / Judul</label>
-                                        <input type="text" id="input-book-title" required placeholder="Masukkan tajuk buku..." class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white transition">
-                                    </div>
-                                    <div class="md:col-span-5">
-                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Kod Perolehan (Opsional)</label>
-                                        <input type="text" id="input-book-code" placeholder="Cth: B-2026-001" class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white transition">
-                                    </div>
-                                    <button type="submit" class="md:col-span-12 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3 rounded-xl text-xs transition shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2">
-                                        <i data-lucide="plus" class="w-4 h-4"></i> Rekodkan Pinjaman Ini
-                                    </button>
-                                </form>
-                            </div>
-
-                            <!-- 4. JADUAL SENARAI BUKU SEDANG DIPINJAM -->
-                            <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-                                <div class="bg-indigo-600 text-white px-6 py-3.5 font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
-                                    <i data-lucide="book-open" class="w-4 h-4"></i> Senarai Buku Sedang Dipinjam
-                                </div>
-                                <div class="p-6 overflow-x-auto">
-                                    <table class="w-full text-left text-xs">
-                                        <thead>
-                                            <tr class="border-b border-slate-200 text-slate-700 font-extrabold uppercase">
-                                                <th class="p-3 w-12 text-center">Bil.</th>
-                                                <th class="p-3">Tajuk Buku</th>
-                                                <th class="p-3">Tarikh Pinjam</th>
-                                                <th class="p-3">Tarikh Perlu Pulang (+14 Hari)</th>
-                                                <th class="p-3 text-right">Status / Tindakan</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="borrowed-list-rows" class="divide-y divide-slate-200">
-                                            <tr>
-                                                <td colspan="5" class="text-center py-6 text-slate-500 italic font-semibold">Tiada rekod pinjaman aktif.</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- 5. JADUAL SEJARAH PINJAMAN TERDAHULU -->
-                            <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-                                <div class="bg-slate-100 border-b border-slate-200 text-slate-800 px-6 py-3.5 font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
-                                    <i data-lucide="history" class="w-4 h-4 text-indigo-600"></i> Sejarah Pinjaman Terdahulu
-                                </div>
-                                <div class="p-6 overflow-x-auto">
-                                    <table class="w-full text-left text-xs">
-                                        <thead>
-                                            <tr class="border-b border-slate-200 text-slate-700 font-extrabold uppercase">
-                                                <th class="p-3 w-12 text-center">Bil.</th>
-                                                <th class="p-3">Tajuk Buku</th>
-                                                <th class="p-3">Tarikh Pinjam</th>
-                                                <th class="p-3">Tarikh Dipulangkan</th>
-                                                <th class="p-3 text-right">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="history-list-rows" class="divide-y divide-slate-200">
-                                            <tr>
-                                                <td colspan="5" class="text-center py-6 text-slate-500 italic font-semibold">Tiada sejarah pinjaman terdahulu.</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                        </div>
+                    <div class="grid grid-cols-12 gap-2">
+                        <span class="col-span-4 text-slate-500">Kelas</span>
+                        <span class="col-span-1 text-center">:</span>
+                        <span class="col-span-7 font-black text-indigo-600" id="disp-class">-</span>
+                    </div>
+                    <div class="grid grid-cols-12 gap-2">
+                        <span class="col-span-4 text-slate-500">No. IC</span>
+                        <span class="col-span-1 text-center">:</span>
+                        <span class="col-span-7 font-mono font-extrabold text-slate-700" id="disp-id">-</span>
+                    </div>
+                    <div class="grid grid-cols-12 gap-2">
+                        <span class="col-span-4 text-slate-500">Jantina</span>
+                        <span class="col-span-1 text-center">:</span>
+                        <span class="col-span-7 font-extrabold text-slate-800" id="disp-gender">-</span>
                     </div>
                 </div>
-            </section>
+            </div>
 
+            <!-- BUTANG NAVIGATION MOD PINJAMAN / PEMULANGAN -->
+            <div class="flex bg-slate-200/80 p-1.5 rounded-2xl border border-slate-300">
+                <button id="btn-tab-borrow" onclick="setFormTab('borrow')" class="flex-1 py-3 text-center font-extrabold text-xs rounded-xl bg-indigo-600 text-white shadow-md flex items-center justify-center gap-2 transition">
+                    <i data-lucide="book-open" class="w-4 h-4"></i> Pinjaman Buku Baharu
+                </button>
+                <button id="btn-tab-return" onclick="setFormTab('return')" class="flex-1 py-3 text-center font-extrabold text-xs rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2 transition">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Pemulangan Buku
+                </button>
+            </div>
+
+            <!-- BORANG REKOD PINJAMAN BAHARU -->
+            <div id="form-borrow" class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
+                <h3 class="text-xs font-extrabold text-indigo-600 uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Borang Rekod Pinjaman Buku
+                </h3>
+                <form onsubmit="handleBorrow(event)" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div class="md:col-span-7">
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Tajuk Buku / Judul</label>
+                        <input type="text" id="input-book-title" required placeholder="Masukkan tajuk buku..." class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white transition">
+                    </div>
+                    <div class="md:col-span-5">
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Kod Perolehan (Opsional)</label>
+                        <input type="text" id="input-book-code" placeholder="Cth: B-2026-001" class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white transition">
+                    </div>
+                    <button type="submit" class="md:col-span-12 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3 rounded-xl text-xs transition shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Rekodkan Pinjaman Ini
+                    </button>
+                </form>
+            </div>
+
+            <!-- JADUAL SENARAI BUKU SEDANG DIPINJAM -->
+            <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+                <div class="bg-indigo-600 text-white px-6 py-3.5 font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-4 h-4"></i> Senarai Buku Sedang Dipinjam
+                </div>
+                <div class="p-6 overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-slate-700 font-extrabold uppercase">
+                                <th class="p-3 w-12 text-center">Bil.</th>
+                                <th class="p-3">Tajuk Buku</th>
+                                <th class="p-3">Tarikh Pinjam</th>
+                                <th class="p-3">Tarikh Perlu Pulang (+14 Hari)</th>
+                                <th class="p-3 text-right">Status / Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="borrowed-list-rows" class="divide-y divide-slate-200">
+                            <tr>
+                                <td colspan="5" class="text-center py-6 text-slate-500 italic font-semibold">Tiada rekod pinjaman aktif.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- JADUAL SEJARAH PINJAMAN TERDAHULU -->
+            <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+                <div class="bg-slate-100 border-b border-slate-200 text-slate-800 px-6 py-3.5 font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="history" class="w-4 h-4 text-indigo-600"></i> Sejarah Pinjaman Terdahulu
+                </div>
+                <div class="p-6 overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-slate-700 font-extrabold uppercase">
+                                <th class="p-3 w-12 text-center">Bil.</th>
+                                <th class="p-3">Tajuk Buku</th>
+                                <th class="p-3">Tarikh Pinjam</th>
+                                <th class="p-3">Tarikh Dipulangkan</th>
+                                <th class="p-3 text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-list-rows" class="divide-y divide-slate-200">
+                            <tr>
+                                <td colspan="5" class="text-center py-6 text-slate-500 italic font-semibold">Tiada sejarah pinjaman terdahulu.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
        <!-- TAB 4: MOD PENGAWAS - DAFTAR AHLI BAHARU (SISTEM PUKAL) -->
 <section id="content-daftar-ahli" class="hidden space-y-6">
     <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
@@ -1839,6 +1842,24 @@ function switchTab(tab) {
                 btnBorrow.className = "flex-1 py-3 text-center font-extrabold text-xs rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-2 transition";
             }
         }
+
+// FUNGSI MEMBUKA / FOKUS IMBASAN TELEFON (DENGAN PEMANGGILAN KAMERA NATIVE)
+function startMobileCameraScanner() {
+    switchTab('kaunter');
+    
+    // Aktifkan kamera telefon native jika ada
+    if (typeof switchMode === 'function') {
+        switchMode('mobile');
+    }
+
+    setTimeout(() => {
+        const input = document.getElementById('sim-ic-input');
+        if (input) {
+            input.focus();
+            input.select();
+        }
+    }, 150);
+}
 
  // FUNGSI MEMINJAM BUKU BERSERTA TARIKH & MASA MASA-NYATA
 async function handleBorrow(e) {
