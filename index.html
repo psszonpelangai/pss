@@ -136,6 +136,11 @@
                     <i data-lucide="scan-line" class="w-4 h-4 shrink-0"></i> 
                     <span class="sidebar-text whitespace-nowrap">Pinjaman & Pemulangan</span>
                 </button>
+		<!-- TAB BAHARU: REKOD TRANSAKSI -->
+                <button onclick="switchTab('transaksi')" id="nav-transaksi" title="Rekod Transaksi" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition">
+                    <i data-lucide="receipt-text" class="w-4 h-4 shrink-0"></i> 
+                    <span class="sidebar-text whitespace-nowrap">Rekod Transaksi</span>
+                </button>
 
                 <!-- TAB 4: DAFTAR AHLI -->
                 <button onclick="switchTab('daftar-ahli')" id="nav-daftar-ahli" title="Daftar Ahli Baharu" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition">
@@ -640,6 +645,59 @@
     </div>
 </section>
 
+<!-- TAB BAHARU: REKOD TRANSAKSI PINJAMAN & PEMULANGAN -->
+        <section id="content-transaksi" class="hidden space-y-6">
+            <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-200 pb-4">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-slate-900">Rekod Transaksi Keseluruhan PSS</h2>
+                        <p class="text-xs text-slate-600 font-semibold mt-0.5">Klik pada nama murid untuk pergi terus ke kaunter urusan pinjaman/pemulangan.</p>
+                    </div>
+                    <button onclick="loadAllTransactions()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 text-indigo-600"></i> Muat Semula Data
+                    </button>
+                </div>
+
+                <!-- BAR CARIAN & TAPISAN STATUS -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                    <div class="md:col-span-8">
+                        <input type="text" id="search-trans-input" onkeyup="filterTransactions()" placeholder="Cari Nama Murid, Kelas, atau Tajuk Buku..." class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white transition">
+                    </div>
+                    <div class="md:col-span-4">
+                        <select id="filter-trans-status" onchange="filterTransactions()" class="w-full bg-slate-50 border border-slate-300 px-3 py-2.5 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white transition">
+                            <option value="">Semua Status Transaksi</option>
+                            <option value="AKTIF">Status: Aktif (Sedang Dipinjam)</option>
+                            <option value="SELESAI">Status: Selesai (Dipulangkan)</option>
+                            <option value="LEWAT">Status: Lewat (Perlu Pulang)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- JADUAL TRANSAKSI -->
+                <div class="overflow-x-auto border border-slate-200 rounded-2xl shadow-sm">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="bg-indigo-900 text-white font-extrabold uppercase tracking-wider border-b-2 border-indigo-950">
+                                <th class="p-3.5 w-12 text-center">Bil.</th>
+                                <th class="p-3.5">Nama Murid</th>
+                                <th class="p-3.5">Kelas</th>
+                                <th class="p-3.5">Tajuk Buku</th>
+                                <th class="p-3.5">Tarikh Pinjam</th>
+                                <th class="p-3.5">Tarikh Pulang / Due</th>
+                                <th class="p-3.5 text-center">Status</th>
+                                <th class="p-3.5 text-right">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transaction-table-rows" class="divide-y divide-slate-200 bg-white">
+                            <tr>
+                                <td colspan="8" class="text-center py-8 text-slate-500 italic font-semibold">Memuatkan rekod transaksi...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
           <!-- TAB 5: MOD PENYELARAS (ADMIN - TEMA CERAH) -->
             <section id="content-admin" class="hidden space-y-6">
                 <!-- Tetingkap Log Masuk PIN Admin -->
@@ -792,6 +850,11 @@
             <i data-lucide="scan-line" class="w-5 h-5"></i>
             <span class="text-[10px]">Kaunter</span>
         </button>
+	<button onclick="switchTab('transaksi')" id="mobile-nav-transaksi" class="flex flex-col items-center gap-1 text-slate-500 font-bold p-1">
+            <i data-lucide="receipt-text" class="w-5 h-5"></i>
+            <span class="text-[10px]">Transaksi</span>
+        </button>
+	
         <button onclick="switchTab('daftar-ahli')" id="mobile-nav-daftar-ahli" class="flex flex-col items-center gap-1 text-slate-500 font-bold p-1">
             <i data-lucide="user-plus" class="w-5 h-5"></i>
             <span class="text-[10px]">Daftar</span>
@@ -1365,7 +1428,7 @@ async function handleBulkUnregister() {
             generateAndPrintSelectedCards();
         }
 
-    function generateAndPrintSelectedCards() {
+   function generateAndPrintSelectedCards() {
     if (selectedMembersForPrint.size === 0) {
         alert('Sila tandakan (tick) sekurang-kurangnya seorang ahli untuk dicetak.');
         return;
@@ -1374,56 +1437,65 @@ async function handleBulkUnregister() {
     const container = document.getElementById('printable-cards-container');
     container.innerHTML = '';
 
-    // Ambil nama sekolah dinamik dari elemen footer/header atau pembolehubah global
+    // Ambil nama sekolah & logo dinamik
     const schoolName = document.getElementById('footer-school-name')?.innerText || window.SCHOOL_NAME || "SK PELANGAI";
+    const schoolLogo = window.SCHOOL_LOGO || "";
     const selectedList = masterStudents.filter(s => selectedMembersForPrint.has(s.ic_number));
 
     selectedList.forEach(s => {
         const card = document.createElement('div');
-        // Kad menegak dengan ruang tebuk lubang lanyard di bahagian atas
-        card.className = "rfid-card-vertical border-2 border-blue-900 rounded-2xl bg-white flex flex-col justify-between items-center text-center overflow-hidden shadow-sm";
+        // Kad menegak saiz RFID / CR80
+        card.className = "rfid-card-vertical border-2 border-indigo-900 rounded-2xl bg-white flex flex-col justify-between items-center text-center overflow-hidden shadow-sm";
         
+        // Element Lencana / Logo Sekolah (jika ada logo, papar gambar; jika tiada, papar ikon formal)
+        const logoHtml = schoolLogo 
+            ? `<img src="${schoolLogo}" class="w-7 h-7 object-contain mb-0.5 filter drop-shadow">`
+            : `<i data-lucide="school" class="w-6 h-6 text-amber-300 mb-0.5"></i>`;
+
         card.innerHTML = `
-            <!-- HEADER KAD BIRU KORPORAT (DENGAN RUANG TEBUK LUBANG LANYARD) -->
-            <div class="bg-blue-900 text-white w-full pt-4 pb-2 px-1 flex flex-col justify-center items-center shrink-0 border-b-2 border-amber-400 relative">
+            <!-- HEADER KAD FORMAL (BIRU KORPORAT DENGAN LENCANA & INDIKATOR LUBANG LANYARD) -->
+            <div class="bg-indigo-900 text-white w-full pt-3 pb-2 px-2 flex flex-col justify-center items-center shrink-0 border-b-2 border-amber-400 relative">
                 
-                <!-- Panduan Indikator Tebuk Lubang Lanyard (Bulatan Putus-Putus Kecil) -->
+                <!-- Panduan Tebuk Lubang Lanyard -->
                 <div class="absolute top-1 left-1/2 transform -translate-x-1/2 w-3.5 h-3.5 border border-dashed border-amber-300/60 rounded-full flex items-center justify-center">
                     <div class="w-1 h-1 bg-amber-300/40 rounded-full"></div>
                 </div>
 
-                <!-- 1. BARIS ATAS: PSS DIGITAL -->
-                <span class="text-[9px] font-extrabold uppercase tracking-widest text-white leading-tight mt-1">
+                <!-- LENCANA / LOGO SEKOLAH -->
+                <div class="mt-1 flex items-center justify-center">
+                    ${logoHtml}
+                </div>
+
+                <!-- MAKLUMAT HEADER FORMAL -->
+                <span class="text-[8px] font-extrabold uppercase tracking-widest text-indigo-200 leading-tight">
                     PSS DIGITAL
                 </span>
 
-                <!-- 2. BARIS TENGAH: NAMA SEKOLAH DINAMIK -->
-                <span class="text-[8px] font-extrabold uppercase tracking-wider text-amber-300 leading-tight mt-0.5">
+                <span class="text-[8.5px] font-black uppercase tracking-wide text-amber-300 leading-tight my-0.5">
                     ${schoolName}
                 </span>
 
-                <!-- 3. BARIS BAWAH: KAD AHLI SAHABAT PSS -->
-                <h4 class="text-[9.5px] font-black uppercase tracking-wide text-white leading-tight mt-0.5">
+                <h4 class="text-[9px] font-black uppercase tracking-wider text-white leading-tight">
                     KAD AHLI SAHABAT PSS
                 </h4>
             </div>
 
-            <!-- BADAN UTAMA (QR CODE DI TENGAH) -->
+            <!-- BADAN UTAMA (KOD QR DI TENGAH) -->
             <div class="flex-1 flex flex-col items-center justify-center p-2 w-full">
                 <div id="qrcode-${s.ic_number}" class="bg-white p-1.5 border border-slate-300 rounded-xl shadow-inner flex items-center justify-center"></div>
             </div>
 
-            <!-- FOOTER (MAKLUMAT MURID DI BAWAH) -->
+            <!-- FOOTER (NAMA MURID, KELAS & NO KP) -->
             <div class="bg-slate-50 w-full p-2 border-t border-slate-200 flex flex-col justify-center items-center shrink-0">
                 <h3 class="text-[10px] font-black text-slate-900 uppercase leading-snug line-clamp-2 px-1 mb-1">
                     ${s.full_name}
                 </h3>
                 
-                <div class="flex items-center justify-center gap-1.5 text-[8px] font-bold text-slate-700">
-                    <span class="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-300 font-extrabold">
+                <div class="flex items-center justify-center gap-1.5 text-[8.5px] font-bold text-slate-700">
+                    <span class="bg-indigo-100 text-indigo-900 px-1.5 py-0.5 rounded border border-indigo-300 font-extrabold">
                         ${s.short_class}
                     </span>
-                    <span class="font-mono text-slate-600">
+                    <span class="font-mono text-slate-700 font-bold tracking-wider">
                         ${s.ic_number}
                     </span>
                 </div>
@@ -1432,22 +1504,23 @@ async function handleBulkUnregister() {
 
         container.appendChild(card);
 
-        // Jana QR Code menggunakan pustaka QRCode.js
+        // Jana QR Code menggunakan QRCode.js
         setTimeout(() => {
             const qrElement = document.getElementById(`qrcode-${s.ic_number}`);
             if (qrElement) {
                 qrElement.innerHTML = ''; 
                 new QRCode(qrElement, {
                     text: s.ic_number,
-                    width: 90,
-                    height: 90
+                    width: 85,
+                    height: 85
                 });
             }
         }, 80);
     });
 
-    // Panggil tetingkap cetakan automatik
+    // Re-create icons untuk ikon lencana sekolah jika tiada imej logo
     setTimeout(() => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         window.print();
     }, 500);
 }
@@ -1771,8 +1844,9 @@ function closeSearchModal() {
     loadMasterStudents();
 }
  // FUNGSI SWITCH TAB DIKEMASKINI DENGAN SOKONGAN MOBILE NAV & SIDEBAR RESPONSIVE
+
 function switchTab(tab) {
-    const tabs = ['dashboard', 'sahabat', 'kaunter', 'daftar-ahli', 'admin'];
+    const tabs = ['dashboard', 'sahabat', 'kaunter', 'transaksi', 'daftar-ahli', 'admin'];
     
     tabs.forEach(t => {
         // Sembunyikan kandungan & reset Desktop Nav
@@ -1813,14 +1887,22 @@ function switchTab(tab) {
         }
     }
 
-    // Tutup sidebar mobile secara automatik selepas tab dipilih
+    // Tutup sidebar mobile secara automatik
     if (typeof toggleMobileSidebar === 'function') {
         toggleMobileSidebar(false);
+    }
+
+    // Muat data transaksi jika tab transaksi dipilih
+    if (tab === 'transaksi') {
+        loadAllTransactions();
     }
 
     // SIMPAN TAB TERAKHIR DALAM LOCALSTORAGE
     localStorage.setItem('active_pss_tab', tab);
 }
+
+
+
         function resetKaunter() {
             currentStudentIC = null;
             document.getElementById('student-card-active').classList.add('hidden');
@@ -2044,6 +2126,130 @@ async function returnBook(txId) {
                 });
             }
         }
+
+// Variable simpan rekod transaksi secara global
+let allTransactionsList = [];
+
+// 1. Ambil Semua Transaksi dari Supabase
+async function loadAllTransactions() {
+    const tbody = document.getElementById('transaction-table-rows');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500 italic font-semibold">Memuatkan rekod...</td></tr>`;
+
+    const { data, error } = await supabaseClient
+        .from('book_transactions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error("Ralat ambil transaksi:", error);
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-rose-500 font-semibold">Gagal memuatkan rekod.</td></tr>`;
+        return;
+    }
+
+    allTransactionsList = data || [];
+    filterTransactions();
+}
+
+// 2. Tapis & Render Jadual Transaksi
+function filterTransactions() {
+    const tbody = document.getElementById('transaction-table-rows');
+    if (!tbody) return;
+
+    const textQuery = document.getElementById('search-trans-input').value.toLowerCase().trim();
+    const statusQuery = document.getElementById('filter-trans-status').value;
+
+    const filtered = allTransactionsList.filter(t => {
+        const student = masterStudents.find(s => s.ic_number.toString().trim() === String(t.ic_number).trim());
+        const studentName = student ? student.full_name.toLowerCase() : '';
+        const studentClass = student ? (student.short_class || '').toLowerCase() : '';
+        const bookTitle = (t.book_title || '').toLowerCase();
+
+        const matchesText = !textQuery || 
+            studentName.includes(textQuery) || 
+            studentClass.includes(textQuery) || 
+            bookTitle.includes(textQuery) ||
+            String(t.ic_number).includes(textQuery);
+
+        let currentStatus = (t.status === 'DIPINJAM') ? 'AKTIF' : 'SELESAI';
+        
+        // Semak jika Lewat
+        if (t.status === 'DIPINJAM' && t.due_date) {
+            const parts = t.due_date.split('/');
+            if (parts.length === 3) {
+                const dueDateObj = new Date(parts[2], parts[1] - 1, parts[0]);
+                if (dueDateObj < new Date()) {
+                    currentStatus = 'LEWAT';
+                }
+            }
+        }
+
+        const matchesStatus = !statusQuery || currentStatus === statusQuery;
+
+        return matchesText && matchesStatus;
+    });
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500 italic font-semibold">Tiada rekod transaksi dijumpai.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map((t, index) => {
+        const student = masterStudents.find(s => s.ic_number.toString().trim() === String(t.ic_number).trim());
+        const studentName = student ? student.full_name : 'Murid Tidak Ditemui';
+        const studentClass = student ? student.short_class : '-';
+
+        let statusBadge = '';
+        if (t.status === 'DIPULANGKAN') {
+            statusBadge = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase">Selesai</span>`;
+        } else {
+            // Semak tarikh lewat
+            let isOverdue = false;
+            if (t.due_date) {
+                const parts = t.due_date.split('/');
+                if (parts.length === 3) {
+                    const dueDateObj = new Date(parts[2], parts[1] - 1, parts[0]);
+                    if (dueDateObj < new Date()) isOverdue = true;
+                }
+            }
+
+            if (isOverdue) {
+                statusBadge = `<span class="bg-rose-100 text-rose-800 border border-rose-300 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase">Lewat</span>`;
+            } else {
+                statusBadge = `<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase">Aktif</span>`;
+            }
+        }
+
+        return `
+            <tr class="hover:bg-slate-50 transition">
+                <td class="p-3.5 text-center font-bold text-slate-500">${index + 1}</td>
+                <td class="p-3.5">
+                    <button onclick="jumpToStudentTransaction('${t.ic_number}')" class="font-extrabold text-indigo-700 hover:text-indigo-900 hover:underline text-left">
+                        ${studentName}
+                    </button>
+                </td>
+                <td class="p-3.5 font-bold text-slate-700">${studentClass}</td>
+                <td class="p-3.5 font-bold text-slate-900">${t.book_title}</td>
+                <td class="p-3.5 font-mono text-slate-600">${t.borrow_date || '-'}</td>
+                <td class="p-3.5 font-mono text-slate-600">${t.status === 'DIPULANGKAN' ? (t.return_date || '-') : (t.due_date || '-')}</td>
+                <td class="p-3.5 text-center">${statusBadge}</td>
+                <td class="p-3.5 text-right">
+                    <button onclick="jumpToStudentTransaction('${t.ic_number}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold shadow-sm transition">
+                        Lihat Profil / Urus
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// 3. Lompat dari Jadual Transaksi Terus ke Kaunter Profil Murid
+async function jumpToStudentTransaction(icNumber) {
+    switchTab('kaunter');
+    await openStudentByIC(icNumber);
+}
+
     </script>
 </body>
 </html>
